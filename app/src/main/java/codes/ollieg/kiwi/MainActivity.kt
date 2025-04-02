@@ -22,12 +22,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -52,6 +50,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
+            // TODO: move stuff to custom layout using content: @Composable () -> Unit
             KiWiTheme {
                 val navController = rememberNavController()
 
@@ -100,7 +99,7 @@ class MainActivity : ComponentActivity() {
 
                             // divider adjusted to be more transparent and take up less width
                             Divider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                                 thickness = 1.dp,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
                             )
@@ -226,7 +225,9 @@ class MainActivity : ComponentActivity() {
                                         type = NavType.StringType
                                     }
                                 )) { context ->
-                                Greeting(context.arguments?.getString("wiki") ?: "No wiki provided")
+
+                                val wikiId = context.arguments?.getString("wiki")!!
+                                WikiHomeScreen(wikiId)
                             }
 
                             composable(
@@ -239,44 +240,31 @@ class MainActivity : ComponentActivity() {
                                         type = NavType.StringType
                                     }
                                 )) { context ->
-                                val article =
-                                    context.arguments?.getString("article") ?: "No article provided"
-                                val wiki =
-                                    context.arguments?.getString("wiki") ?: "No wiki provided"
-                                Greeting("$article from $wiki")
+
+                                val articleId = context.arguments?.getString("article")!!
+                                val wikiId = context.arguments?.getString("wiki")!!
+
+                                ArticleScreen(
+                                    wikiId = wikiId,
+                                    articleId = articleId
+                                )
                             }
 
                             composable(route = AppScreens.ManageWikis.name) {
-
+                                ManageWikisScreen()
                             }
 
                             composable(route = AppScreens.ManageStorage.name) {
-
+                                ManageStorageScreen()
                             }
 
                             composable(route = AppScreens.OtherSettings.name) {
-
+                                OtherSettingsScreen()
                             }
                         }
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    KiWiTheme {
-        Greeting("Android")
     }
 }
