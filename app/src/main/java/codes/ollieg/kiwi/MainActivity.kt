@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
 
                             Text(text="Wikis", modifier = subtitleModifier)
 
-                            val itemModifier = Modifier.padding(8.dp)
+                            val itemModifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
 
                             // TODO: generate dynamically
                             NavigationDrawerItem(
@@ -107,10 +107,15 @@ class MainActivity : ComponentActivity() {
 
                             Text(text="Settings", modifier = subtitleModifier)
 
+                            // TODO: use shared base component for these
+
                             NavigationDrawerItem(
                                 modifier = itemModifier,
                                 icon = {
-
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.library_books),
+                                        contentDescription = null
+                                    )
                                 },
                                 label = { Text(text = "Manage wikis") },
                                 selected = (navRoute == AppScreens.ManageWikis.name),
@@ -123,12 +128,13 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
 
-                            // TODO: use shared base component for these
-
                             NavigationDrawerItem(
                                 modifier = itemModifier,
                                 icon = {
-
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.hard_disk),
+                                        contentDescription = null
+                                    )
                                 },
                                 label = { Text(text = "Manage offline storage") },
                                 selected = (navRoute == AppScreens.ManageStorage.name),
