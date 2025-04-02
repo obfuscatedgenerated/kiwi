@@ -60,10 +60,12 @@ class MainActivity : ComponentActivity() {
                             val title = when (screen) {
                                 AppScreens.WikiHome -> {
                                    // get the wiki name argument
+                                   // TODO: resolve to actual name from datastore, this is just the id
                                    arguments?.getString("wiki") ?: "Wiki"
                                 }
                                 AppScreens.Article -> {
                                     // get the article name argument
+                                    // TODO: resolve to actual name from api, this is just the page slug
                                     arguments?.getString("article") ?: "Article"
                                 }
                                 AppScreens.ManageWikis -> "Manage Wikis"
