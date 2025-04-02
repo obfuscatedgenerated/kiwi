@@ -3,9 +3,11 @@ package codes.ollieg.kiwi
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
@@ -24,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
@@ -52,6 +55,13 @@ class MainActivity : ComponentActivity() {
             KiWiTheme {
                 val navController = rememberNavController()
 
+                // get navController context as state so it updates
+                val navState by navController.currentBackStackEntryAsState()
+
+                // get the current route from the navController
+                val navRoute = navState?.destination?.route
+                val navArgs = navState?.arguments
+
                 // navdrawer code adapted from android docs
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                 val scope = rememberCoroutineScope()
@@ -59,14 +69,91 @@ class MainActivity : ComponentActivity() {
                 ModalNavigationDrawer(
                     drawerContent = {
                         ModalDrawerSheet {
-                            Text("Drawer title", modifier = Modifier.padding(16.dp))
-                            Divider()
+                            Text("KiWi", modifier = Modifier.padding(16.dp))
+                            Spacer(modifier = Modifier.padding(4.dp))
+
+                            val subtitleModifier = Modifier.padding(start = 24.dp, end = 10.dp, top = 10.dp, bottom = 10.dp)
+
+                            Text(text="Wikis", modifier = subtitleModifier)
+
+                            val itemModifier = Modifier.padding(8.dp)
+
+                            // TODO: generate dynamically
                             NavigationDrawerItem(
-                                label = { Text(text = "Drawer Item") },
-                                selected = false,
-                                onClick = { /*TODO*/ }
+                                modifier = itemModifier,
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.baseline_menu_book_24),
+                                        contentDescription = null
+                                    )
+                                },
+                                label = { Text(text = "Wikipedia") },
+                                selected = (navRoute?.startsWith(AppScreens.WikiHome.name) == true && navArgs?.getString("wiki") == "wikipedia"),
+                                onClick = {
+                                    // navigate to the wiki home screen
+                                    navController.navigate("${AppScreens.WikiHome.name}/wikipedia")
+                                    scope.launch {
+                                        drawerState.close()
+                                    }
+                                }
                             )
-                            // ...other drawer items
+
+                            // divider adjusted to be more transparent and take up less width
+                            Divider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                thickness = 1.dp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                            )
+
+                            Text(text="Settings", modifier = subtitleModifier)
+
+                            NavigationDrawerItem(
+                                modifier = itemModifier,
+                                icon = {
+
+                                },
+                                label = { Text(text = "Manage wikis") },
+                                selected = (navRoute == AppScreens.ManageWikis.name),
+                                onClick = {
+                                    // navigate to the manage wikis screen
+                                    navController.navigate(AppScreens.ManageWikis.name)
+                                    scope.launch {
+                                        drawerState.close()
+                                    }
+                                }
+                            )
+
+                            // TODO: use shared base component for these
+
+                            NavigationDrawerItem(
+                                modifier = itemModifier,
+                                icon = {
+
+                                },
+                                label = { Text(text = "Manage offline storage") },
+                                selected = (navRoute == AppScreens.ManageStorage.name),
+                                onClick = {
+                                    // navigate to the manage storage screen
+                                    navController.navigate(AppScreens.ManageStorage.name)
+                                    scope.launch {
+                                        drawerState.close()
+                                    }
+                                }
+                            )
+
+                            NavigationDrawerItem(
+                                modifier = itemModifier,
+                                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                                label = { Text(text = "Other settings") },
+                                selected = (navRoute == AppScreens.OtherSettings.name),
+                                onClick = {
+                                    // navigate to the other settings screen
+                                    navController.navigate(AppScreens.OtherSettings.name)
+                                    scope.launch {
+                                        drawerState.close()
+                                    }
+                                }
+                            )
                         }
                     },
                     drawerState = drawerState
@@ -79,34 +166,27 @@ class MainActivity : ComponentActivity() {
                                     titleContentColor = MaterialTheme.colorScheme.primary
                                 ),
                                 title = {
-                                    // get navController context as state so it updates
-                                    val context by navController.currentBackStackEntryAsState()
-
-                                    // get the current route from the navController
-                                    val route = context?.destination?.route
-                                    val arguments = context?.arguments
-
                                     // get the current screen from the route
                                     val screen =
-                                        route?.substringBefore("/")?.let { AppScreens.valueOf(it) }
+                                        navRoute?.substringBefore("/")?.let { AppScreens.valueOf(it) }
 
                                     // decide the title based on the current screen
                                     val title = when (screen) {
                                         AppScreens.WikiHome -> {
                                             // get the wiki name argument
                                             // TODO: resolve to actual name from datastore, this is just the id
-                                            arguments?.getString("wiki") ?: "Wiki"
+                                            navArgs?.getString("wiki") ?: "Wiki"
                                         }
 
                                         AppScreens.Article -> {
                                             // get the article name argument
                                             // TODO: resolve to actual name from api, this is just the page slug
-                                            arguments?.getString("article") ?: "Article"
+                                            navArgs?.getString("article") ?: "Article"
                                         }
 
-                                        AppScreens.ManageWikis -> "Manage Wikis"
-                                        AppScreens.ManageStorage -> "Manage Storage"
-                                        AppScreens.OtherSettings -> "Other Settings"
+                                        AppScreens.ManageWikis -> "Wikis"
+                                        AppScreens.ManageStorage -> "Offline storage"
+                                        AppScreens.OtherSettings -> "Other settings"
                                         else -> "KiWi"
                                     }
 
