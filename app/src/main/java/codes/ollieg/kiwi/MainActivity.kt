@@ -4,16 +4,28 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -21,6 +33,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import codes.ollieg.kiwi.ui.theme.KiWiTheme
+import kotlinx.coroutines.launch
 
 enum class AppScreens {
     WikiHome,
@@ -39,82 +52,125 @@ class MainActivity : ComponentActivity() {
             KiWiTheme {
                 val navController = rememberNavController()
 
-                Scaffold(topBar = {
-                    CenterAlignedTopAppBar(
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            titleContentColor = MaterialTheme.colorScheme.primary
-                        ),
-                        title = {
-                            // get navController context as state so it updates
-                            val context by navController.currentBackStackEntryAsState()
+                // navdrawer code adapted from android docs
+                val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+                val scope = rememberCoroutineScope()
 
-                            // get the current route from the navController
-                            val route = context?.destination?.route
-                            val arguments = context?.arguments
+                ModalNavigationDrawer(
+                    drawerContent = {
+                        ModalDrawerSheet {
+                            Text("Drawer title", modifier = Modifier.padding(16.dp))
+                            Divider()
+                            NavigationDrawerItem(
+                                label = { Text(text = "Drawer Item") },
+                                selected = false,
+                                onClick = { /*TODO*/ }
+                            )
+                            // ...other drawer items
+                        }
+                    },
+                    drawerState = drawerState
+                ) {
+                    Scaffold(
+                        topBar = {
+                            CenterAlignedTopAppBar(
+                                colors = TopAppBarDefaults.topAppBarColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    titleContentColor = MaterialTheme.colorScheme.primary
+                                ),
+                                title = {
+                                    // get navController context as state so it updates
+                                    val context by navController.currentBackStackEntryAsState()
 
-                            // get the current screen from the route
-                            val screen = route?.substringBefore("/")?.let { AppScreens.valueOf(it) }
+                                    // get the current route from the navController
+                                    val route = context?.destination?.route
+                                    val arguments = context?.arguments
 
-                            // decide the title based on the current screen
-                            val title = when (screen) {
-                                AppScreens.WikiHome -> {
-                                   // get the wiki name argument
-                                   // TODO: resolve to actual name from datastore, this is just the id
-                                   arguments?.getString("wiki") ?: "Wiki"
+                                    // get the current screen from the route
+                                    val screen =
+                                        route?.substringBefore("/")?.let { AppScreens.valueOf(it) }
+
+                                    // decide the title based on the current screen
+                                    val title = when (screen) {
+                                        AppScreens.WikiHome -> {
+                                            // get the wiki name argument
+                                            // TODO: resolve to actual name from datastore, this is just the id
+                                            arguments?.getString("wiki") ?: "Wiki"
+                                        }
+
+                                        AppScreens.Article -> {
+                                            // get the article name argument
+                                            // TODO: resolve to actual name from api, this is just the page slug
+                                            arguments?.getString("article") ?: "Article"
+                                        }
+
+                                        AppScreens.ManageWikis -> "Manage Wikis"
+                                        AppScreens.ManageStorage -> "Manage Storage"
+                                        AppScreens.OtherSettings -> "Other Settings"
+                                        else -> "KiWi"
+                                    }
+
+                                    Text(text = title)
+                                },
+                                navigationIcon = {
+                                    IconButton(onClick = {
+                                        // toggle the drawer (uses a coroutine)
+                                        scope.launch {
+                                            if (drawerState.isClosed) {
+                                                drawerState.open()
+                                            } else {
+                                                drawerState.close()
+                                            }
+                                        }
+                                    }) {
+                                        Icon(Icons.Default.Menu, contentDescription = "Menu")
+                                    }
                                 }
-                                AppScreens.Article -> {
-                                    // get the article name argument
-                                    // TODO: resolve to actual name from api, this is just the page slug
-                                    arguments?.getString("article") ?: "Article"
-                                }
-                                AppScreens.ManageWikis -> "Manage Wikis"
-                                AppScreens.ManageStorage -> "Manage Storage"
-                                AppScreens.OtherSettings -> "Other Settings"
-                                else -> "KiWi"
+                            )
+                        }
+                    ) { innerPadding ->//pass the innerPadding to avoid the content of the Scaffold overlapping with the TopAppBar
+                        NavHost(
+                            navController = navController,
+                            startDestination = "${AppScreens.WikiHome.name}/wikipedia",
+                            modifier = Modifier.padding(innerPadding)// use the innerPadding
+                        ) {
+                            composable(
+                                route = "${AppScreens.WikiHome.name}/{wiki}", arguments = listOf(
+                                    navArgument(name = "wiki") {
+                                        type = NavType.StringType
+                                    }
+                                )) { context ->
+                                Greeting(context.arguments?.getString("wiki") ?: "No wiki provided")
                             }
 
-                            Text(text = title)
-                        },
-                    )
-                }) { innerPadding ->//pass the innerPadding to avoid the content of the Scaffold overlapping with the TopAppBar
-                    NavHost(
-                        navController = navController,
-                        startDestination = "${AppScreens.WikiHome.name}/wikipedia",
-                        modifier = Modifier.padding(innerPadding)// use the innerPadding
-                    ) {
-                        composable(
-                            route = "${AppScreens.WikiHome.name}/{wiki}", arguments = listOf(
-                            navArgument(name = "wiki") {
-                                type = NavType.StringType
+                            composable(
+                                route = "${AppScreens.Article.name}/{wiki}/{article}",
+                                arguments = listOf(
+                                    navArgument(name = "wiki") {
+                                        type = NavType.StringType
+                                    },
+                                    navArgument(name = "article") {
+                                        type = NavType.StringType
+                                    }
+                                )) { context ->
+                                val article =
+                                    context.arguments?.getString("article") ?: "No article provided"
+                                val wiki =
+                                    context.arguments?.getString("wiki") ?: "No wiki provided"
+                                Greeting("$article from $wiki")
                             }
-                        )) { context ->
-                            Greeting(context.arguments?.getString("wiki") ?: "No wiki provided")
-                        }
 
-                        composable(route = "${AppScreens.Article.name}/{wiki}/{article}", arguments = listOf(
-                            navArgument(name = "wiki") {
-                                type = NavType.StringType
-                            },
-                            navArgument(name = "article") {
-                                type = NavType.StringType
+                            composable(route = AppScreens.ManageWikis.name) {
+
                             }
-                        )) { context ->
-                            val article = context.arguments?.getString("article") ?: "No article provided"
-                            val wiki = context.arguments?.getString("wiki") ?: "No wiki provided"
-                            Greeting("$article from $wiki")
-                        }
 
-                        composable(route = AppScreens.ManageWikis.name) {
+                            composable(route = AppScreens.ManageStorage.name) {
 
-                        }
+                            }
 
-                        composable(route = AppScreens.ManageStorage.name) {
+                            composable(route = AppScreens.OtherSettings.name) {
 
-                        }
-
-                        composable(route = AppScreens.OtherSettings.name) {
-
+                            }
                         }
                     }
                 }
