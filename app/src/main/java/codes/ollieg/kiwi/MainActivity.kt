@@ -3,21 +3,21 @@ package codes.ollieg.kiwi
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import codes.ollieg.kiwi.ui.theme.KiWiTheme
@@ -37,19 +37,45 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             KiWiTheme {
+                val navController = rememberNavController()
+
                 Scaffold(topBar = {
-                    TopAppBar(
+                    CenterAlignedTopAppBar(
                         colors = TopAppBarDefaults.topAppBarColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            titleContentColor = MaterialTheme.colorScheme.primaryadd
+                            titleContentColor = MaterialTheme.colorScheme.primary
                         ),
                         title = {
-                            Text("KiWi")
+                            // get navController context as state so it updates
+                            val context by navController.currentBackStackEntryAsState()
+
+                            // get the current route from the navController
+                            val route = context?.destination?.route
+                            val arguments = context?.arguments
+
+                            // get the current screen from the route
+                            val screen = route?.substringBefore("/")?.let { AppScreens.valueOf(it) }
+
+                            // decide the title based on the current screen
+                            val title = when (screen) {
+                                AppScreens.WikiHome -> {
+                                   // get the wiki name argument
+                                   arguments?.getString("wiki") ?: "Wiki"
+                                }
+                                AppScreens.Article -> {
+                                    // get the article name argument
+                                    arguments?.getString("article") ?: "Article"
+                                }
+                                AppScreens.ManageWikis -> "Manage Wikis"
+                                AppScreens.ManageStorage -> "Manage Storage"
+                                AppScreens.OtherSettings -> "Other Settings"
+                                else -> "KiWi"
+                            }
+
+                            Text(text = title)
                         },
                     )
                 }) { innerPadding ->//pass the innerPadding to avoid the content of the Scaffold overlapping with the TopAppBar
-                    val navController = rememberNavController()
-
                     NavHost(
                         navController = navController,
                         startDestination = "${AppScreens.WikiHome.name}/wikipedia",
