@@ -1,5 +1,6 @@
 package codes.ollieg.kiwi
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -10,6 +11,7 @@ import androidx.compose.ui.unit.dp
 fun WikiHomeScreen(
     wikiId: String,
 ) {
+    Log.i("WikiHomeScreen", "wikiId: $wikiId")
     Text(
         text = "Wiki Home Screen for $wikiId",
         modifier = Modifier.padding(16.dp)

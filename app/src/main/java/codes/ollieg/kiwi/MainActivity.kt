@@ -1,13 +1,21 @@
 package codes.ollieg.kiwi
 
+import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.net.ConnectivityManager
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
@@ -28,6 +36,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -37,6 +46,7 @@ import androidx.navigation.navArgument
 import codes.ollieg.kiwi.ui.theme.KiWiTheme
 import kotlinx.coroutines.launch
 
+
 enum class AppScreens {
     WikiHome,
     Article,
@@ -45,10 +55,55 @@ enum class AppScreens {
     OtherSettings,
 }
 
+class ConnectionChangeReceiver : BroadcastReceiver {
+    var lastOnlineValue: Boolean? = null
+
+    fun checkOnline(context: Context): Boolean {
+        // check if the device is connected to the internet
+        // this api is deprecated, but i couldn't find another way that works nicely with broadcast receivers
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isConnected
+    }
+
+    constructor(context: Context) : super() {
+        // set initial value for lastOnlineValue
+        lastOnlineValue = checkOnline(context)
+        Log.i("ConnectionChangeReceiver", "Initial connection state: $lastOnlineValue")
+    }
+
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+    override fun onReceive(context: Context, intent: Intent) {
+        val isOnline = checkOnline(context)
+        Log.i("ConnectionChangeReceiver", "Connection state event: $isOnline")
+
+        if (isOnline == lastOnlineValue) {
+            // no change in connection state, do nothing
+            Log.i("ConnectionChangeReceiver", "No change in connection state, ignoring event.")
+            return
+        }
+
+        lastOnlineValue = isOnline
+
+        if (!isOnline) {
+            Toast.makeText(context, "Your device just went offline.\n" +
+                    "Only articles in offline storage will be available.", Toast.LENGTH_LONG).show()
+        } else {
+            Toast.makeText(context, "Back online!", Toast.LENGTH_LONG).show()
+        }
+    }
+}
+
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // register receiver to show toast when device connects to or loses connection to the internet
+        val connChangeReceiver = ConnectionChangeReceiver(this)
+        val connChangeReceiverFlags = ContextCompat.RECEIVER_NOT_EXPORTED
+        val connChangeFilter = IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
+        ContextCompat.registerReceiver(this, connChangeReceiver, connChangeFilter, connChangeReceiverFlags)
 
         setContent {
             // TODO: move stuff to custom layout using content: @Composable () -> Unit
