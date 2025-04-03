@@ -30,11 +30,21 @@ class WikisViewModel (application: Application) : AndroidViewModel(application) 
         return repo.getByIdLive(id)
     }
 
-    suspend fun insert(wiki: Wiki): Long {
-        return repo.insert(wiki)
+    fun insert(wiki: Wiki): Long {
+        return runBlocking {
+            repo.insert(wiki)
+        }
     }
 
-    suspend fun update(wiki: Wiki): Int {
-        return repo.update(wiki)
+    fun update(wiki: Wiki): Int {
+        return runBlocking {
+            repo.update(wiki)
+        }
+    }
+
+    fun upsert(wiki: Wiki): Long {
+        return runBlocking {
+            repo.upsert(wiki)
+        }
     }
 }

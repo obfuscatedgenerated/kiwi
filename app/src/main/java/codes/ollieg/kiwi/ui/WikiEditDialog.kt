@@ -1,6 +1,7 @@
 package codes.ollieg.kiwi.ui
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,6 +28,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
@@ -37,6 +42,18 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import codes.ollieg.kiwi.data.room.Wiki
 import codes.ollieg.kiwi.data.room.WikisViewModel
+
+fun saveWiki(wiki: Wiki, wikisViewModel: WikisViewModel): Boolean {
+    // tries to update/insert the wiki into the database but will return false if it fails
+    // note that the form validation should check if the name is already in use or this will return false (unique constraint)
+    try {
+        wikisViewModel.upsert(wiki)
+        return true
+    } catch (e: Error) {
+        Log.e("WikiEditDialog", "Error saving wiki: ${e.message}")
+        return false
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +69,7 @@ fun WikiEditDialog(
     } else {
         // make a temporary wiki object when adding wikis, which will be inserted into the database when the user clicks save
         Wiki(
-            id = -1,
+            id = 0, // room should automatically assign an id
             name = "",
             apiUrl = "",
             authUsername = "",
@@ -60,20 +77,30 @@ fun WikiEditDialog(
         )
     }
 
+    // wiki object fields copied into state to avoid weirdness when editing form fields (reverts to initial value due to it being reset each paint)
+    // to be copied back into the wiki object when saving
+    var wikiApiUrl by remember { mutableStateOf(wiki.apiUrl) }
+    var wikiName by remember { mutableStateOf(wiki.name) }
+    var wikiAuthUsername by remember { mutableStateOf(wiki.authUsername) }
+    var wikiAuthPassword by remember { mutableStateOf(wiki.authPassword) }
+
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
     )
 
     // now using bottom sheet rather than dialog so it can be swiped down
 
-    ModalBottomSheet (
+    ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
         shape = RectangleShape, // gets rid of the rounded corners to make it look more natural
         dragHandle = null, // as well as hiding the drag handle
     ) {
-        Scaffold (
-            modifier = Modifier.safeDrawingPadding().fillMaxSize().padding(horizontal = 8.dp),
+        Scaffold(
+            modifier = Modifier
+                .safeDrawingPadding()
+                .fillMaxSize()
+                .padding(horizontal = 8.dp),
             topBar = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -81,7 +108,7 @@ fun WikiEditDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // separate boxes for left and right floated content
-                    Row (
+                    Row(
                         horizontalArrangement = Arrangement.Start,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -106,12 +133,27 @@ fun WikiEditDialog(
                     }
 
                     // right floated content
-                    Row (
+                    Row(
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Button(
-                            onClick = { /* TODO: save wiki */ },
+                            onClick = {
+                                val newWiki = wiki.copy(
+                                    apiUrl = wikiApiUrl,
+                                    name = wikiName,
+                                    authUsername = wikiAuthUsername,
+                                    authPassword = wikiAuthPassword
+                                )
+
+                                val success = saveWiki(newWiki, wikisViewModel)
+
+                                if (success) {
+                                    onDismissRequest()
+                                } else {
+                                    /* TODO: show error message */
+                                }
+                            },
                             colors = ButtonDefaults.textButtonColors()
                         ) {
                             Text("Save")
@@ -129,10 +171,12 @@ fun WikiEditDialog(
                 bottomPadding += 16.dp
 
                 // status icon and text ("looks good" or error e.g. "missing x field", "invalid url", "couldnt reach api", "not a mediawiki api")
-                Row (
+                Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = bottomPadding)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = bottomPadding)
                 ) {
                     Icon(
                         Icons.Default.Check,
@@ -148,7 +192,7 @@ fun WikiEditDialog(
                 }
             }
         ) { padding ->
-            Column (
+            Column(
                 modifier = Modifier.padding(padding)
             ) {
                 val formFieldHorizontalPadding = 16.dp
@@ -157,8 +201,10 @@ fun WikiEditDialog(
                 // main details form
 
                 OutlinedTextField(
-                    value = wiki.apiUrl,
-                    onValueChange = { /* TODO: update wiki api url in temporary object */ },
+                    value = wikiApiUrl,
+                    onValueChange = { value ->
+                        wikiApiUrl = value
+                    },
                     label = { Text("API URL") },
                     placeholder = { Text("e.g. https://en.wikipedia.org/w/api.php") },
                     supportingText = {
@@ -180,8 +226,10 @@ fun WikiEditDialog(
 
                 // note: this will get set automatically when trying the api if empty
                 OutlinedTextField(
-                    value = wiki.name,
-                    onValueChange = { /* TODO: update wiki name in temporary object */ },
+                    value = wikiName,
+                    onValueChange = { value ->
+                        wikiName = value
+                    },
                     label = { Text("Wiki name") },
                     placeholder = { Text("e.g. Wikipedia") },
                     modifier = Modifier
@@ -204,8 +252,10 @@ fun WikiEditDialog(
                 )
 
                 OutlinedTextField(
-                    value = wiki.authUsername,
-                    onValueChange = { /* TODO: update wiki username in temporary object */ },
+                    value = wikiAuthUsername,
+                    onValueChange = { value ->
+                        wikiAuthUsername = value
+                    },
                     label = { Text("Username") },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -217,8 +267,10 @@ fun WikiEditDialog(
                 )
 
                 OutlinedTextField(
-                    value = wiki.authPassword,
-                    onValueChange = { /* TODO: update wiki password in temporary object */ },
+                    value = wikiAuthPassword,
+                    onValueChange = { value ->
+                        wikiAuthPassword = value
+                    },
                     label = { Text("Password") },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),

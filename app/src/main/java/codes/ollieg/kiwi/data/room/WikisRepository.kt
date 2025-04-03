@@ -17,6 +17,10 @@ class WikisRepository(private val wikisDao: WikisDao) {
         return wikisDao.update(wiki)
     }
 
+    suspend fun upsert(wiki: Wiki): Long {
+        return wikisDao.upsert(wiki)
+    }
+
     suspend fun delete(wiki: Wiki): Int {
         return wikisDao.delete(wiki)
     }

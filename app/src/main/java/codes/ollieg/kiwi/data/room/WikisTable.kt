@@ -9,8 +9,8 @@ import androidx.room.PrimaryKey
 data class Wiki (
     @PrimaryKey(autoGenerate = true) val id: Long,
 
-    val name: String,
-    val apiUrl: String,
-    val authUsername: String,
-    val authPassword: String,
+    var name: String,
+    var apiUrl: String,
+    var authUsername: String,
+    var authPassword: String,
 )

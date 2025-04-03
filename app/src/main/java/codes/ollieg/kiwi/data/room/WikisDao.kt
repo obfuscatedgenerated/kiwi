@@ -16,14 +16,8 @@ interface WikisDao {
     @Update(onConflict = OnConflictStrategy.ABORT)
     suspend fun update(wiki: Wiki): Int
 
-    suspend fun insertOrUpdate(wiki: Wiki): Long {
-        return try {
-            insert(wiki)
-        } catch (e: Exception) {
-            update(wiki)
-            wiki.id
-        }
-    }
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(wiki: Wiki): Long
 
     @Delete
     suspend fun delete(wiki: Wiki): Int
