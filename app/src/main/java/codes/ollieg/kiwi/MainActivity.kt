@@ -15,8 +15,10 @@ import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.LibraryBooks
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
@@ -137,10 +139,7 @@ class MainActivity : ComponentActivity() {
                             NavigationDrawerItem(
                                 modifier = itemModifier,
                                 icon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.baseline_menu_book_24),
-                                        contentDescription = null
-                                    )
+                                    Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null)
                                 },
                                 label = { Text(text = "Wikipedia") },
                                 selected = (navRoute?.startsWith(AppScreens.WikiHome.name) == true && navArgs?.getString("wiki") == "wikipedia"),
@@ -167,10 +166,7 @@ class MainActivity : ComponentActivity() {
                             NavigationDrawerItem(
                                 modifier = itemModifier,
                                 icon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.library_books),
-                                        contentDescription = null
-                                    )
+                                    Icon(Icons.AutoMirrored.Filled.LibraryBooks, contentDescription = null)
                                 },
                                 label = { Text(text = "Manage wikis") },
                                 selected = (navRoute == AppScreens.ManageWikis.name),
@@ -204,7 +200,7 @@ class MainActivity : ComponentActivity() {
 
                             NavigationDrawerItem(
                                 modifier = itemModifier,
-                                icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
+                                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
                                 label = { Text(text = "Other settings") },
                                 selected = (navRoute == AppScreens.OtherSettings.name),
                                 onClick = {
