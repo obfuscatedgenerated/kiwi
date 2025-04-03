@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.text.KeyboardOptions
@@ -29,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -117,12 +120,19 @@ fun WikiEditDialog(
                 }
             },
             bottomBar = {
-                // status icon and text ("looks good" or error e.g. "missing x field", "invalid url", "couldnt reach api", "not a mediawiki api")
+                // compute bottom padding, reducing if keyboard is open
+                // it'll be 72dp if keyboard is closed, and 16dp if it's open
+                var bottomPadding = 56.dp - WindowInsets.ime.getBottom(LocalDensity.current).dp
+                if (bottomPadding < 0.dp) {
+                    bottomPadding = 0.dp
+                }
+                bottomPadding += 16.dp
 
+                // status icon and text ("looks good" or error e.g. "missing x field", "invalid url", "couldnt reach api", "not a mediawiki api")
                 Row (
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 72.dp)
+                    modifier = Modifier.fillMaxWidth().padding(bottom = bottomPadding)
                 ) {
                     Icon(
                         Icons.Default.Check,
