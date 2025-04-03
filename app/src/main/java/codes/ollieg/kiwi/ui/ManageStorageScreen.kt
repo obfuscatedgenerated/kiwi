@@ -16,6 +16,9 @@ fun ManageStorageScreen(
 
     WikiList(
         wikis = allWikis.value ?: emptyList(),
+        subtexts = allWikis.value?.map { wiki ->
+            "Storage size goes here"
+        },
         button = { wiki ->
             WikiStorageDeleteButton(
                 wiki = wiki,
