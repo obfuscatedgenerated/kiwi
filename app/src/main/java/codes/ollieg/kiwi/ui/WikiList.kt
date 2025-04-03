@@ -33,7 +33,8 @@ fun WikiList(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column (
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
                 ) {
                     Text(
                         text = wiki.name,
