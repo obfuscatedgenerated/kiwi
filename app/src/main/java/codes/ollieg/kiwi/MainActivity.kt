@@ -12,23 +12,15 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresPermission
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.LibraryBooks
-import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -37,8 +29,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -46,12 +36,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import codes.ollieg.kiwi.data.room.KiwiDatabase
-import codes.ollieg.kiwi.data.room.WikisRepository
 import codes.ollieg.kiwi.data.room.WikisViewModel
 import codes.ollieg.kiwi.ui.ArticleScreen
 import codes.ollieg.kiwi.ui.ManageStorageScreen
 import codes.ollieg.kiwi.ui.ManageWikisScreen
+import codes.ollieg.kiwi.ui.NavDrawer
 import codes.ollieg.kiwi.ui.OtherSettingsScreen
 import codes.ollieg.kiwi.ui.WikiHomeScreen
 import codes.ollieg.kiwi.ui.theme.KiWiTheme
@@ -119,112 +108,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
 
-            // get navController context as state so it updates
-            val navState by navController.currentBackStackEntryAsState()
+            val wikisViewModel = WikisViewModel(this.application)
 
-            // get the current route from the navController
-            val navRoute = navState?.destination?.route
-            val navArgs = navState?.arguments
-
-            // navdrawer code adapted from android docs
+            // part of docs on how to use the drawer, heavily adapted to a component
             val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
             val scope = rememberCoroutineScope()
 
-            val wikisViewModel = WikisViewModel(this.application)
-
-            // TODO: move stuff to custom layout using content: @Composable () -> Unit
             KiWiTheme {
-                ModalNavigationDrawer(
-                    drawerContent = {
-                        ModalDrawerSheet {
-                            Text("KiWi", modifier = Modifier.padding(16.dp))
-                            Spacer(modifier = Modifier.padding(4.dp))
-
-                            val subtitleModifier = Modifier.padding(start = 24.dp, end = 10.dp, top = 10.dp, bottom = 10.dp)
-
-                            Text(text="Wikis", modifier = subtitleModifier)
-
-                            val itemModifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-
-                            // TODO: generate dynamically
-                            val wikipedia by wikisViewModel.getByIdLive(1).observeAsState()
-                            NavigationDrawerItem(
-                                modifier = itemModifier,
-                                icon = {
-                                    Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null)
-                                },
-                                label = { Text(text = wikipedia?.name ?: "Loading...") },
-                                selected = (navRoute?.startsWith(AppScreens.WikiHome.name) == true && navArgs?.getLong("wiki_id") == 1L),
-                                onClick = {
-                                    // navigate to the wiki home screen
-                                    navController.navigate("${AppScreens.WikiHome.name}/1")
-                                    scope.launch {
-                                        drawerState.close()
-                                    }
-                                }
-                            )
-
-                            // divider adjusted to be more transparent and take up less width
-                            Divider(
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                                thickness = 1.dp,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-                            )
-
-                            Text(text="Settings", modifier = subtitleModifier)
-
-                            // TODO: use shared base component for these
-
-                            NavigationDrawerItem(
-                                modifier = itemModifier,
-                                icon = {
-                                    Icon(Icons.AutoMirrored.Filled.LibraryBooks, contentDescription = null)
-                                },
-                                label = { Text(text = "Manage wikis") },
-                                selected = (navRoute == AppScreens.ManageWikis.name),
-                                onClick = {
-                                    // navigate to the manage wikis screen
-                                    navController.navigate(AppScreens.ManageWikis.name)
-                                    scope.launch {
-                                        drawerState.close()
-                                    }
-                                }
-                            )
-
-                            NavigationDrawerItem(
-                                modifier = itemModifier,
-                                icon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.hard_disk),
-                                        contentDescription = null
-                                    )
-                                },
-                                label = { Text(text = "Manage offline storage") },
-                                selected = (navRoute == AppScreens.ManageStorage.name),
-                                onClick = {
-                                    // navigate to the manage storage screen
-                                    navController.navigate(AppScreens.ManageStorage.name)
-                                    scope.launch {
-                                        drawerState.close()
-                                    }
-                                }
-                            )
-
-                            NavigationDrawerItem(
-                                modifier = itemModifier,
-                                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                                label = { Text(text = "Other settings") },
-                                selected = (navRoute == AppScreens.OtherSettings.name),
-                                onClick = {
-                                    // navigate to the other settings screen
-                                    navController.navigate(AppScreens.OtherSettings.name)
-                                    scope.launch {
-                                        drawerState.close()
-                                    }
-                                }
-                            )
-                        }
-                    },
+                NavDrawer (
+                    navController = navController,
+                    wikisViewModel = wikisViewModel,
                     drawerState = drawerState
                 ) {
                     Scaffold(
@@ -235,6 +128,11 @@ class MainActivity : ComponentActivity() {
                                     titleContentColor = MaterialTheme.colorScheme.primary
                                 ),
                                 title = {
+                                    // get navstate here too, just in topbar to avoid useless repainting
+                                    val navState by navController.currentBackStackEntryAsState()
+                                    val navRoute = navState?.destination?.route
+                                    val navArgs = navState?.arguments
+
                                     // get the current screen from the route
                                     val screen =
                                         navRoute?.substringBefore("/")?.let { AppScreens.valueOf(it) }
@@ -278,12 +176,13 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-                    ) { innerPadding ->//pass the innerPadding to avoid the content of the Scaffold overlapping with the TopAppBar
+                    ) { innerPadding -> //pass the innerPadding to avoid the content of the Scaffold overlapping with the TopAppBar
                         NavHost(
                             navController = navController,
                             startDestination = "${AppScreens.WikiHome.name}/1",
                             modifier = Modifier.padding(innerPadding)// use the innerPadding
                         ) {
+                            // wiki home screen
                             composable(
                                 route = "${AppScreens.WikiHome.name}/{wiki_id}", arguments = listOf(
                                     navArgument(name = "wiki_id") {
@@ -295,6 +194,7 @@ class MainActivity : ComponentActivity() {
                                 WikiHomeScreen(wikiId)
                             }
 
+                            // article screen
                             composable(
                                 route = "${AppScreens.Article.name}/{wiki}/{article}",
                                 arguments = listOf(
@@ -314,6 +214,8 @@ class MainActivity : ComponentActivity() {
                                     articleId = articleId
                                 )
                             }
+
+                            // settings screens
 
                             composable(route = AppScreens.ManageWikis.name) {
                                 ManageWikisScreen()
