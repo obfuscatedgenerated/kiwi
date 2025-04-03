@@ -17,11 +17,12 @@ import codes.ollieg.kiwi.data.room.Wiki
 @Composable
 fun WikiList(
     wikis: List<Wiki>,
+    modifier: Modifier = Modifier,
     subtexts: List<String>? = null,
     button: @Composable ((Wiki) -> Unit)? = null,
 ) {
     LazyColumn (
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         items(wikis.size) { index ->
             val wiki = wikis[index]

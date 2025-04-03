@@ -21,7 +21,7 @@ fun WikiStorageDeleteButton(
     ) {
         Icon(
             imageVector = Icons.Outlined.Delete,
-            contentDescription = "Delete offline storage used by ${wiki.name}",
+            contentDescription = "Clear offline storage used by ${wiki.name}",
         )
     }
 }
