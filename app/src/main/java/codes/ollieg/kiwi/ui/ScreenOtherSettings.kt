@@ -8,13 +8,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ArticleScreen(
-    wikiId: Long,
-    articleId: String,
+fun ScreenOtherSettings(
 ) {
-    Log.i("ArticleScreen", "wikiId: $wikiId, articleId: $articleId")
+    Log.i("OtherSettingsScreen", "Other Settings Screen")
     Text(
-        text = "Article Screen for $wikiId - $articleId",
+        text = "Other Settings Screen",
         modifier = Modifier.padding(16.dp)
     )
 }

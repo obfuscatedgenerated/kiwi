@@ -33,7 +33,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
-fun NavDrawerWikiItem(
+fun KiwiNavDrawerWikiItem(
     wikiId: Long,
     wikisViewModel: WikisViewModel,
     selected: Boolean,
@@ -54,7 +54,7 @@ fun NavDrawerWikiItem(
 }
 
 @Composable
-fun NavDrawer(
+fun KiwiNavDrawer(
     navController: NavController,
     wikisViewModel: WikisViewModel,
     drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
@@ -85,7 +85,7 @@ fun NavDrawer(
                 val allWikis by wikisViewModel.allWikis.observeAsState()
                 allWikis?.forEach { wiki ->
                     Log.i("NavDrawer", "Wiki: ${wiki.name}")
-                    NavDrawerWikiItem(
+                    KiwiNavDrawerWikiItem(
                         wikiId = wiki.id,
                         wikisViewModel = wikisViewModel,
 

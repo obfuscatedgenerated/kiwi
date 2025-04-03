@@ -9,11 +9,11 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import codes.ollieg.kiwi.ui.ArticleScreen
-import codes.ollieg.kiwi.ui.ManageStorageScreen
-import codes.ollieg.kiwi.ui.ManageWikisScreen
-import codes.ollieg.kiwi.ui.OtherSettingsScreen
-import codes.ollieg.kiwi.ui.WikiHomeScreen
+import codes.ollieg.kiwi.ui.ScreenArticle
+import codes.ollieg.kiwi.ui.ScreenManageStorage
+import codes.ollieg.kiwi.ui.ScreenManageWikis
+import codes.ollieg.kiwi.ui.ScreenOtherSettings
+import codes.ollieg.kiwi.ui.ScreenWikiHome
 
 @Composable
 fun KiwiNavHost(
@@ -34,7 +34,7 @@ fun KiwiNavHost(
             )) { context ->
 
             val wikiId = context.arguments?.getLong("wiki_id")!!
-            WikiHomeScreen(wikiId)
+            ScreenWikiHome(wikiId)
         }
 
         // article screen
@@ -52,7 +52,7 @@ fun KiwiNavHost(
             val articleId = context.arguments?.getString("article")!!
             val wikiId = context.arguments?.getLong("wiki_id")!!
 
-            ArticleScreen(
+            ScreenArticle(
                 wikiId = wikiId,
                 articleId = articleId
             )
@@ -61,15 +61,15 @@ fun KiwiNavHost(
         // settings screens
 
         composable(route = AppScreens.ManageWikis.name) {
-            ManageWikisScreen()
+            ScreenManageWikis()
         }
 
         composable(route = AppScreens.ManageStorage.name) {
-            ManageStorageScreen()
+            ScreenManageStorage()
         }
 
         composable(route = AppScreens.OtherSettings.name) {
-            OtherSettingsScreen()
+            ScreenOtherSettings()
         }
     }
 }

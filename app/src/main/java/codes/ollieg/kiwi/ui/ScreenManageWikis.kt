@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import codes.ollieg.kiwi.data.room.WikisViewModel
 
 @Composable
-fun ManageWikisScreen(
+fun ScreenManageWikis(
 ) {
     val context = LocalContext.current.applicationContext as Application
     val wikisViewModel = WikisViewModel(context)
@@ -44,7 +44,7 @@ fun ManageWikisScreen(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = {
-                    Log.i("ManageWikisScreen", "Add button clicked")
+                    Log.i("ScreenManageWikis", "Add button clicked")
 
                     // null id is used for adding wikis
                     showEditDialog(null)
@@ -66,7 +66,7 @@ fun ManageWikisScreen(
         WikiList(
             wikis = allWikis.value ?: emptyList(),
             button = { wiki ->
-                WikiEditButton(
+                ButtonWikiEdit(
                     wiki = wiki,
                     onClick = { showEditDialog(wiki.id) }
                 )
@@ -76,7 +76,7 @@ fun ManageWikisScreen(
 
         // show fullscreen edit dialog form if state is true
         if (editDialogVisible) {
-            WikiEditDialog(
+            DialogWikiEdit(
                 wikiId = editDialogWiki,
                 onDismissRequest = { hideEditDialog() },
             )

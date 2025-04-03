@@ -8,10 +8,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun WikiHomeScreen(
+fun ScreenWikiHome(
     wikiId: Long,
 ) {
-    Log.i("WikiHomeScreen", "wikiId: $wikiId")
+    Log.i("ScreenWikiHome", "wikiId: $wikiId")
     Text(
         text = "Wiki Home Screen for $wikiId",
         modifier = Modifier.padding(16.dp)

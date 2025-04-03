@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(
+fun KiwiTopBar(
     navController: NavController,
     wikisViewModel: WikisViewModel,
     drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),

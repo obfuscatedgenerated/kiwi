@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import codes.ollieg.kiwi.data.room.WikisViewModel
 
 @Composable
-fun ManageStorageScreen(
+fun ScreenManageStorage(
 ) {
     val context = LocalContext.current.applicationContext as Application
     val wikisViewModel = WikisViewModel(context)
@@ -27,7 +27,7 @@ fun ManageStorageScreen(
     Scaffold (
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = { Log.i("ManageStorageScreen", "Delete button clicked") },
+                onClick = { Log.i("ScreenManageStorage", "Delete button clicked") },
                 modifier = Modifier.padding(16.dp),
             ) {
                 Icon(
@@ -48,7 +48,7 @@ fun ManageStorageScreen(
                 "Storage size goes here"
             },
             button = { wiki ->
-                WikiStorageDeleteButton(
+                ButtonWikiStorageDelete(
                     wiki = wiki,
                     onClick = {/* TODO */}
                 )

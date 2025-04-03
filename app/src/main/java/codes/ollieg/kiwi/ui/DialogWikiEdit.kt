@@ -50,14 +50,14 @@ fun saveWiki(wiki: Wiki, wikisViewModel: WikisViewModel): Boolean {
         wikisViewModel.upsert(wiki)
         return true
     } catch (e: Error) {
-        Log.e("WikiEditDialog", "Error saving wiki: ${e.message}")
+        Log.e("DialogWikiEdit", "Error saving wiki: ${e.message}")
         return false
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WikiEditDialog(
+fun DialogWikiEdit(
     wikiId: Long?, // if not specified, this will be an add wiki dialog
     onDismissRequest: () -> Unit,
 ) {

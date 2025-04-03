@@ -19,8 +19,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import codes.ollieg.kiwi.data.room.WikisViewModel
-import codes.ollieg.kiwi.ui.NavDrawer
-import codes.ollieg.kiwi.ui.TopBar
+import codes.ollieg.kiwi.ui.KiwiNavDrawer
+import codes.ollieg.kiwi.ui.KiwiTopBar
 import codes.ollieg.kiwi.ui.theme.KiWiTheme
 
 
@@ -92,14 +92,14 @@ class MainActivity : ComponentActivity() {
 
             // composing the ui from the custom components for a very readable main activity!
             KiWiTheme {
-                NavDrawer (
+                KiwiNavDrawer (
                     navController = navController,
                     wikisViewModel = wikisViewModel,
                     drawerState = drawerState
                 ) {
                     Scaffold(
                         topBar = {
-                            TopBar(
+                            KiwiTopBar(
                                 navController = navController,
                                 wikisViewModel = wikisViewModel,
                                 drawerState = drawerState,
