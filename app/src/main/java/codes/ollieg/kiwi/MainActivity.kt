@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -45,6 +46,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import codes.ollieg.kiwi.data.room.KiwiDatabase
+import codes.ollieg.kiwi.data.room.WikisRepository
+import codes.ollieg.kiwi.data.room.WikisViewModel
 import codes.ollieg.kiwi.ui.ArticleScreen
 import codes.ollieg.kiwi.ui.ManageStorageScreen
 import codes.ollieg.kiwi.ui.ManageWikisScreen
@@ -113,21 +117,24 @@ class MainActivity : ComponentActivity() {
         ContextCompat.registerReceiver(this, connChangeReceiver, connChangeFilter, connChangeReceiverFlags)
 
         setContent {
+            val navController = rememberNavController()
+
+            // get navController context as state so it updates
+            val navState by navController.currentBackStackEntryAsState()
+
+            // get the current route from the navController
+            val navRoute = navState?.destination?.route
+            val navArgs = navState?.arguments
+
+            // navdrawer code adapted from android docs
+            val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+            val scope = rememberCoroutineScope()
+
+            val db = KiwiDatabase.getDatabase(this)
+            val wikisViewModel = WikisViewModel(this.application)
+
             // TODO: move stuff to custom layout using content: @Composable () -> Unit
             KiWiTheme {
-                val navController = rememberNavController()
-
-                // get navController context as state so it updates
-                val navState by navController.currentBackStackEntryAsState()
-
-                // get the current route from the navController
-                val navRoute = navState?.destination?.route
-                val navArgs = navState?.arguments
-
-                // navdrawer code adapted from android docs
-                val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-                val scope = rememberCoroutineScope()
-
                 ModalNavigationDrawer(
                     drawerContent = {
                         ModalDrawerSheet {
@@ -141,16 +148,17 @@ class MainActivity : ComponentActivity() {
                             val itemModifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
 
                             // TODO: generate dynamically
+                            val wikipedia by wikisViewModel.getByIdLive(1).observeAsState()
                             NavigationDrawerItem(
                                 modifier = itemModifier,
                                 icon = {
                                     Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null)
                                 },
-                                label = { Text(text = "Wikipedia") },
-                                selected = (navRoute?.startsWith(AppScreens.WikiHome.name) == true && navArgs?.getString("wiki") == "wikipedia"),
+                                label = { Text(text = wikipedia?.name ?: "Loading...") },
+                                selected = (navRoute?.startsWith(AppScreens.WikiHome.name) == true && navArgs?.getLong("wiki_id") == 1L),
                                 onClick = {
                                     // navigate to the wiki home screen
-                                    navController.navigate("${AppScreens.WikiHome.name}/wikipedia")
+                                    navController.navigate("${AppScreens.WikiHome.name}/1")
                                     scope.launch {
                                         drawerState.close()
                                     }
@@ -235,9 +243,10 @@ class MainActivity : ComponentActivity() {
                                     // decide the title based on the current screen
                                     val title = when (screen) {
                                         AppScreens.WikiHome -> {
-                                            // get the wiki name argument
-                                            // TODO: resolve to actual name from datastore, this is just the id
-                                            navArgs?.getString("wiki") ?: "Wiki"
+                                            // get the wiki name from the id argument
+                                            val wikiId = navArgs?.getLong("wiki_id")!!
+                                            val wiki by wikisViewModel.getByIdLive(wikiId).observeAsState()
+                                            wiki?.name ?: "Loading..."
                                         }
 
                                         AppScreens.Article -> {
@@ -273,17 +282,17 @@ class MainActivity : ComponentActivity() {
                     ) { innerPadding ->//pass the innerPadding to avoid the content of the Scaffold overlapping with the TopAppBar
                         NavHost(
                             navController = navController,
-                            startDestination = "${AppScreens.WikiHome.name}/wikipedia",
+                            startDestination = "${AppScreens.WikiHome.name}/1",
                             modifier = Modifier.padding(innerPadding)// use the innerPadding
                         ) {
                             composable(
-                                route = "${AppScreens.WikiHome.name}/{wiki}", arguments = listOf(
-                                    navArgument(name = "wiki") {
-                                        type = NavType.StringType
+                                route = "${AppScreens.WikiHome.name}/{wiki_id}", arguments = listOf(
+                                    navArgument(name = "wiki_id") {
+                                        type = NavType.LongType
                                     }
                                 )) { context ->
 
-                                val wikiId = context.arguments?.getString("wiki")!!
+                                val wikiId = context.arguments?.getLong("wiki_id")!!
                                 WikiHomeScreen(wikiId)
                             }
 
@@ -299,7 +308,7 @@ class MainActivity : ComponentActivity() {
                                 )) { context ->
 
                                 val articleId = context.arguments?.getString("article")!!
-                                val wikiId = context.arguments?.getString("wiki")!!
+                                val wikiId = context.arguments?.getLong("wiki_id")!!
 
                                 ArticleScreen(
                                     wikiId = wikiId,

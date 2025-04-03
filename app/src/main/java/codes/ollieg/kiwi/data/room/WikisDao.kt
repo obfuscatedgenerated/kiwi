@@ -32,8 +32,14 @@ interface WikisDao {
     suspend fun deleteById(id: Long): Int
 
     @Query("SELECT * FROM Wikis")
-    fun getAll(): LiveData<List<Wiki>>
+    fun getAllLive(): LiveData<List<Wiki>>
+
+    @Query("SELECT * FROM Wikis")
+    suspend fun getAll(): List<Wiki>
 
     @Query("SELECT * FROM Wikis WHERE id = :id")
-    fun getById(id: Long): LiveData<Wiki?>
+    fun getByIdLive(id: Long): LiveData<Wiki?>
+
+    @Query("SELECT * FROM Wikis WHERE id = :id")
+    suspend fun getById(id: Long): Wiki?
 }

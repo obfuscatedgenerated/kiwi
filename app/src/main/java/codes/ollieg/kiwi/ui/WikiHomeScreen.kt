@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun WikiHomeScreen(
-    wikiId: String,
+    wikiId: Long,
 ) {
     Log.i("WikiHomeScreen", "wikiId: $wikiId")
     Text(

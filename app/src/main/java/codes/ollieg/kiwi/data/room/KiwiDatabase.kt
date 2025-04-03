@@ -1,6 +1,7 @@
 package codes.ollieg.kiwi.data.room
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -23,10 +24,19 @@ abstract class KiwiDatabase: RoomDatabase(){
                         // need a coroutine scope to run the insert in the background
                         CoroutineScope(Dispatchers.IO).launch {
                             // add default wiki entry for wikipedia
-                            val wikisRepository = WikisRepository(it.wikisDao())
-                            wikisRepository.insert(
+                            val repo = WikisRepository(it.wikisDao())
+
+                            // check if the database is empty
+                            val wikis = repo.getAll()
+                            if (wikis.isNotEmpty() == true) {
+                                Log.i("KiwiDatabase", "Wikis already exist, skipping default entry.")
+                                return@launch
+                            }
+
+                            // insert the default wikipedia entry
+                            repo.insert(
                                 Wiki(
-                                    id = 0,
+                                    id = 1,
                                     name = "Wikipedia",
                                     apiUrl = "https://en.wikipedia.org/w/api.php",
                                     authUsername = null,

@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun ArticleScreen(
-    wikiId: String,
+    wikiId: Long,
     articleId: String,
 ) {
     Log.i("ArticleScreen", "wikiId: $wikiId, articleId: $articleId")

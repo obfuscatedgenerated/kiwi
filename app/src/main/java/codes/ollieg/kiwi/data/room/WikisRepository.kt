@@ -3,7 +3,11 @@ package codes.ollieg.kiwi.data.room
 import androidx.lifecycle.LiveData
 
 class WikisRepository(private val wikisDao: WikisDao) {
-    val allWikis = wikisDao.getAll()
+    val allWikisLive = wikisDao.getAllLive()
+
+    suspend fun getAll(): List<Wiki> {
+        return wikisDao.getAll()
+    }
 
     suspend fun insert(wiki: Wiki): Long {
         return wikisDao.insert(wiki)
@@ -21,7 +25,11 @@ class WikisRepository(private val wikisDao: WikisDao) {
         return wikisDao.deleteById(id)
     }
 
-    suspend fun getById(id: Long): LiveData<Wiki?> {
+    fun getByIdLive(id: Long): LiveData<Wiki?> {
+        return wikisDao.getByIdLive(id)
+    }
+
+    suspend fun getById(id: Long): Wiki? {
         return wikisDao.getById(id)
     }
 }
