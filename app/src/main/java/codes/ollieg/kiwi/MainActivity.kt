@@ -98,7 +98,7 @@ class ConnectionChangeReceiver : BroadcastReceiver {
 
         if (!isOnline) {
             Toast.makeText(context, "Your device just went offline.\n" +
-                    "Only articles in offline storage will be available.", Toast.LENGTH_LONG).show()
+                    "Only offline articles are available.", Toast.LENGTH_LONG).show()
         } else {
             Toast.makeText(context, "Back online!", Toast.LENGTH_LONG).show()
         }
