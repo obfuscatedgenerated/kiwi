@@ -50,6 +50,7 @@ fun ManageStorageScreen(
             button = { wiki ->
                 WikiStorageDeleteButton(
                     wiki = wiki,
+                    onClick = {/* TODO */}
                 )
             },
             modifier = Modifier.padding(padding)

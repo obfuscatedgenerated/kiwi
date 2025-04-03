@@ -14,9 +14,13 @@ import codes.ollieg.kiwi.data.room.Wiki
 @Composable
 fun WikiEditButton(
     wiki: Wiki,
+    onClick: (Wiki) -> Unit,
 ) {
     IconButton(
-        onClick = { Log.i("WikiEditButton", "Edit button clicked for ${wiki.name}") },
+        onClick = {
+            Log.i("WikiEditButton", "Edit button clicked for ${wiki.name}")
+            onClick(wiki)
+        },
         modifier = Modifier.padding(16.dp),
     ) {
         Icon(
