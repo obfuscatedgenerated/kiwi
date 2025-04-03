@@ -3,6 +3,7 @@ package codes.ollieg.kiwi.data.room
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import kotlinx.coroutines.runBlocking
 
 class WikisViewModel (application: Application) : AndroidViewModel(application) {
     private val repo: WikisRepository
@@ -13,12 +14,16 @@ class WikisViewModel (application: Application) : AndroidViewModel(application) 
     }
 
     val allWikis = repo.allWikisLive
-    suspend fun getAll(): List<Wiki> {
-        return repo.getAll()
+    fun getAll(): List<Wiki> {
+        return runBlocking {
+            repo.getAll()
+        }
     }
 
-    suspend fun getById(id: Long): Wiki? {
-        return repo.getById(id)
+    fun getById(id: Long): Wiki? {
+        return runBlocking {
+            repo.getById(id)
+        }
     }
 
     fun getByIdLive(id: Long): LiveData<Wiki?> {

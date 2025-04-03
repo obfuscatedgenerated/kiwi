@@ -11,6 +11,6 @@ data class Wiki (
 
     val name: String,
     val apiUrl: String,
-    val authUsername: String?,
-    val authPassword: String?,
+    val authUsername: String,
+    val authPassword: String,
 )

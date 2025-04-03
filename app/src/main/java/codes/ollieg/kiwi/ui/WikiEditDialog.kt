@@ -1,5 +1,6 @@
 package codes.ollieg.kiwi.ui
 
+import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,9 +28,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import codes.ollieg.kiwi.data.room.Wiki
+import codes.ollieg.kiwi.data.room.WikisViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +41,22 @@ fun WikiEditDialog(
     wikiId: Long?, // if not specified, this will be an add wiki dialog
     onDismissRequest: () -> Unit,
 ) {
+    val context = LocalContext.current.applicationContext as Application
+    val wikisViewModel = WikisViewModel(context)
+
+    val wiki = if (wikiId != null) {
+        wikisViewModel.getById(wikiId)!!
+    } else {
+        // make a temporary wiki object when adding wikis, which will be inserted into the database when the user clicks save
+        Wiki(
+            id = -1,
+            name = "",
+            apiUrl = "",
+            authUsername = "",
+            authPassword = ""
+        )
+    }
+
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
     )
@@ -127,7 +147,7 @@ fun WikiEditDialog(
                 // main details form
 
                 OutlinedTextField(
-                    value = "",
+                    value = wiki.apiUrl,
                     onValueChange = { /* TODO: update wiki api url in temporary object */ },
                     label = { Text("API URL") },
                     placeholder = { Text("e.g. https://en.wikipedia.org/w/api.php") },
@@ -141,6 +161,7 @@ fun WikiEditDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
+                            top = 16.dp,
                             bottom = formFieldBottomPadding,
                             start = formFieldHorizontalPadding,
                             end = formFieldHorizontalPadding
@@ -149,7 +170,7 @@ fun WikiEditDialog(
 
                 // note: this will get set automatically when trying the api if empty
                 OutlinedTextField(
-                    value = "",
+                    value = wiki.name,
                     onValueChange = { /* TODO: update wiki name in temporary object */ },
                     label = { Text("Wiki name") },
                     placeholder = { Text("e.g. Wikipedia") },
@@ -173,7 +194,7 @@ fun WikiEditDialog(
                 )
 
                 OutlinedTextField(
-                    value = "",
+                    value = wiki.authUsername,
                     onValueChange = { /* TODO: update wiki username in temporary object */ },
                     label = { Text("Username") },
                     modifier = Modifier
@@ -186,7 +207,7 @@ fun WikiEditDialog(
                 )
 
                 OutlinedTextField(
-                    value = "",
+                    value = wiki.authPassword,
                     onValueChange = { /* TODO: update wiki password in temporary object */ },
                     label = { Text("Password") },
                     visualTransformation = PasswordVisualTransformation(),
