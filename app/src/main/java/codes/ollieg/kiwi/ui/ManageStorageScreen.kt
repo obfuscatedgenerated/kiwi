@@ -1,18 +1,25 @@
 package codes.ollieg.kiwi.ui
 
-import android.util.Log
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
+import android.app.Application
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.platform.LocalContext
+import codes.ollieg.kiwi.data.room.WikisViewModel
 
 @Composable
 fun ManageStorageScreen(
 ) {
-    Log.i("ManageStorageScreen", "Manage Storage Screen")
-    Text(
-        text = "Manage Storage Screen",
-        modifier = Modifier.padding(16.dp)
+    val context = LocalContext.current.applicationContext as Application
+    val wikisViewModel = WikisViewModel(context)
+
+    val allWikis = wikisViewModel.allWikis.observeAsState()
+
+    WikiList(
+        wikis = allWikis.value ?: emptyList(),
+        button = { wiki ->
+            WikiStorageDeleteButton(
+                wiki = wiki,
+            )
+        }
     )
 }
