@@ -130,7 +130,6 @@ class MainActivity : ComponentActivity() {
             val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
             val scope = rememberCoroutineScope()
 
-            val db = KiwiDatabase.getDatabase(this)
             val wikisViewModel = WikisViewModel(this.application)
 
             // TODO: move stuff to custom layout using content: @Composable () -> Unit
