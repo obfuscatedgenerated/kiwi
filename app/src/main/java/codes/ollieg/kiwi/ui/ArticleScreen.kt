@@ -1,4 +1,4 @@
-package codes.ollieg.kiwi
+package codes.ollieg.kiwi.ui
 
 import android.util.Log
 import androidx.compose.foundation.layout.padding
@@ -8,11 +8,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun OtherSettingsScreen(
+fun ArticleScreen(
+    wikiId: String,
+    articleId: String,
 ) {
-    Log.i("OtherSettingsScreen", "Other Settings Screen")
+    Log.i("ArticleScreen", "wikiId: $wikiId, articleId: $articleId")
     Text(
-        text = "Other Settings Screen",
+        text = "Article Screen for $wikiId - $articleId",
         modifier = Modifier.padding(16.dp)
     )
 }

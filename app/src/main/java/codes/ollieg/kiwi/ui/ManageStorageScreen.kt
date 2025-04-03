@@ -1,4 +1,4 @@
-package codes.ollieg.kiwi
+package codes.ollieg.kiwi.ui
 
 import android.util.Log
 import androidx.compose.foundation.layout.padding

@@ -1,4 +1,4 @@
-package codes.ollieg.kiwi
+package codes.ollieg.kiwi.ui
 
 import android.util.Log
 import androidx.compose.foundation.layout.padding
@@ -8,13 +8,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ArticleScreen(
+fun WikiHomeScreen(
     wikiId: String,
-    articleId: String,
 ) {
-    Log.i("ArticleScreen", "wikiId: $wikiId, articleId: $articleId")
+    Log.i("WikiHomeScreen", "wikiId: $wikiId")
     Text(
-        text = "Article Screen for $wikiId - $articleId",
+        text = "Wiki Home Screen for $wikiId",
         modifier = Modifier.padding(16.dp)
     )
 }
