@@ -21,7 +21,7 @@ fun WikiStorageDeleteButton(
             Log.i("WikiStorageDeleteButton", "Delete button clicked for ${wiki.name}")
             onClick(wiki)
         },
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier.padding(horizontal = 16.dp),
     ) {
         Icon(
             imageVector = Icons.Outlined.Delete,

@@ -29,12 +29,12 @@ fun WikiList(
             val subtext = subtexts?.getOrNull(index)
 
             Row(
-                modifier = Modifier.padding(8.dp).fillMaxWidth(),
+                modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column (
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.Center,
                 ) {
                     Text(
