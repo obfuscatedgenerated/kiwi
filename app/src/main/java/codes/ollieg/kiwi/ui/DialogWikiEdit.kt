@@ -55,6 +55,19 @@ fun saveWiki(wiki: Wiki, wikisViewModel: WikisViewModel): Boolean {
     }
 }
 
+fun deleteWiki(wikiId: Long, wikisViewModel: WikisViewModel): Boolean {
+    // tries to delete the wiki from the database but will return false if it fails
+    // note: not allowed to delete id 1 (wikipedia), this will return false if attempted
+    // the user can still edit the wiki though, but by default it is wikipedia
+    try {
+        wikisViewModel.deleteById(wikiId)
+        return true
+    } catch (e: Error) {
+        Log.e("DialogWikiEdit", "Error deleting wiki: ${e.message}")
+        return false
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DialogWikiEdit(
@@ -282,6 +295,37 @@ fun DialogWikiEdit(
                             end = formFieldHorizontalPadding
                         ),
                 )
+
+                Spacer(modifier = Modifier.padding(24.dp))
+
+                // right aligned delete button if wiki id is not 1 or null
+                // user isn't allowed to delete wiki 1, and null is a new wiki so it can't be deleted before it's saved
+                if (wikiId != null && wikiId != 1L) {
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Button(
+                            onClick = {
+                                /* TODO: confirm delete */
+                                val success = deleteWiki(wikiId, wikisViewModel)
+                                if (success) {
+                                    onDismissRequest()
+                                } else {
+                                    /* TODO: show error message */
+                                }
+                            },
+                            colors = ButtonDefaults.textButtonColors(),
+
+                            ) {
+                            Text(
+                                text = "Delete wiki",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
             }
         }
     }

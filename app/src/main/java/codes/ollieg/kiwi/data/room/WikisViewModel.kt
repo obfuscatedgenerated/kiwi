@@ -47,4 +47,16 @@ class WikisViewModel (application: Application) : AndroidViewModel(application) 
             repo.upsert(wiki)
         }
     }
+
+    fun delete(wiki: Wiki): Int {
+        return runBlocking {
+            repo.delete(wiki)
+        }
+    }
+
+    fun deleteById(id: Long): Int {
+        return runBlocking {
+            repo.deleteById(id)
+        }
+    }
 }
