@@ -39,17 +39,17 @@ fun KiwiNavHost(
 
         // article screen
         composable(
-            route = "${AppScreens.Article.name}/{wiki}/{article}",
+            route = "${AppScreens.Article.name}/{wiki_id}/{article_id}",
             arguments = listOf(
-                navArgument(name = "wiki") {
-                    type = NavType.StringType
+                navArgument(name = "wiki_id") {
+                    type = NavType.LongType
                 },
-                navArgument(name = "article") {
-                    type = NavType.StringType
+                navArgument(name = "article_id") {
+                    type = NavType.LongType
                 }
             )) { context ->
 
-            val articleId = context.arguments?.getString("article")!!
+            val articleId = context.arguments?.getLong("article_id")!!
             val wikiId = context.arguments?.getLong("wiki_id")!!
 
             ScreenArticle(

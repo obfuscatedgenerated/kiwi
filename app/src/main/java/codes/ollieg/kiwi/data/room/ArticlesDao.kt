@@ -19,6 +19,9 @@ interface ArticlesDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(article: Article): Long
 
+    // TODO: dont allow insertion into the cache if it is missing content or any other nullable basics
+    // maybe need to update ArticlesTable so that its nullable in code but not in the database
+
     @Delete
     suspend fun delete(article: Article): Int
 

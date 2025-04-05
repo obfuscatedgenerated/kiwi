@@ -50,6 +50,8 @@ import org.json.JSONObject
 const val DEBOUNCE_TIME = 1500L
 const val N_RESULTS = 15
 
+// TODO: make search respond quicker
+
 class WikiSearchViewModel(private val wiki: Wiki) : ViewModel() {
     val liveInput = MutableStateFlow("")
 

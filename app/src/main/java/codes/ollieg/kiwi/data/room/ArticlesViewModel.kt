@@ -3,6 +3,10 @@ package codes.ollieg.kiwi.data.room
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class ArticlesViewModel (application: Application) : AndroidViewModel(application) {
@@ -20,10 +24,16 @@ class ArticlesViewModel (application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun getById(wiki: Wiki, pageId: Long, skipCache: Boolean = false): Article? {
-        return runBlocking {
-            repo.getById(wiki, pageId)
+    fun getByIdLive(wiki: Wiki, pageId: Long, skipCache: Boolean = false): LiveData<Article?> {
+        val result = MutableLiveData<Article?>()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val article = repo.getById(wiki, pageId, skipCache)
+            // TODO: handle differently if the article returned is null (error occurred) since the data starts as null
+            result.postValue(article)
         }
+
+        return result
     }
 
     fun getAllCachedByWiki(wiki: Wiki): List<Article> {
