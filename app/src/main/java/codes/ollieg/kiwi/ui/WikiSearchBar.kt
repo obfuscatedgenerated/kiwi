@@ -38,6 +38,7 @@ const val DEBOUNCE_TIME = 1000L
 class WikiSearchViewModel : ViewModel() {
     val liveInput = MutableStateFlow("")
 
+    // don't want to spam the api too much, so debounce the input
     @OptIn(FlowPreview::class)
     val debouncedInput = liveInput.debounce(DEBOUNCE_TIME).distinctUntilChanged()
 
