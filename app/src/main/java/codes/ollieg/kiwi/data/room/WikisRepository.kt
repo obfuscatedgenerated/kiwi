@@ -2,6 +2,8 @@ package codes.ollieg.kiwi.data.room
 
 import androidx.lifecycle.LiveData
 
+// TODO: make this repository useful by fetching live data (e.g. updating title perhaps if the user left it as the default)
+
 class WikisRepository(private val wikisDao: WikisDao) {
     val allWikisLive = wikisDao.getAllLive()
 

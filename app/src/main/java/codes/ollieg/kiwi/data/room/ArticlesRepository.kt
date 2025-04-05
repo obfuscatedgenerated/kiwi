@@ -2,62 +2,84 @@ package codes.ollieg.kiwi.data.room
 
 import androidx.lifecycle.LiveData
 
-class ArticlesRepository(private val articlesDao: ArticlesDao) {
-    val allArticlesLive: LiveData<List<Article>> = articlesDao.getAllLive()
+// this repository serves to get info about articles and their content
+// from both the mediawiki api and the local database as a cache first or for offline use
+// (or explicitly from the cache if using the cache methods)
 
-    suspend fun getAll(): List<Article> {
+class ArticlesRepository(private val articlesDao: ArticlesDao) {
+    val allCachedArticlesLive: LiveData<List<Article>> = articlesDao.getAllLive()
+
+    suspend fun getAllCached(): List<Article> {
         return articlesDao.getAll()
     }
 
-    suspend fun insert(article: Article): Long {
-        return articlesDao.insert(article)
+    fun getByIdCachedLive(wiki: Wiki, pageId: Long): LiveData<Article?> {
+        return articlesDao.getByIdLive(wiki.id, pageId)
     }
 
-    suspend fun update(article: Article): Int {
-        return articlesDao.update(article)
+    fun getByIdLive(wiki: Wiki, pageId: Long): LiveData<Article?> {
+        // TODO: if available in offline cache (and not outdated), get from local db. otherwise, get from api
+        return getByIdCachedLive(wiki, pageId)
     }
 
-    suspend fun upsert(article: Article): Long {
-        return articlesDao.upsert(article)
+    suspend fun getByIdCached(wiki: Wiki, pageId: Long): Article? {
+        return articlesDao.getById(wiki.id, pageId)
     }
 
-    suspend fun delete(article: Article): Int {
-        return articlesDao.delete(article)
+    suspend fun getById(wiki: Wiki, pageId: Long): Article? {
+        // TODO: if available in offline cache (and not outdated), get from local db. otherwise, get from api
+        return getByIdCached(wiki, pageId)
     }
 
-    suspend fun deleteById(wikiId: Long, pageId: Long): Int {
-        return articlesDao.deleteById(wikiId, pageId)
-    }
-
-    suspend fun deleteAllByWikiId(wikiId: Long): Int {
-        return articlesDao.deleteAllByWikiId(wikiId)
-    }
-
-    fun getByIdLive(wikiId: Long, pageId: Long): LiveData<Article?> {
-        return articlesDao.getByIdLive(wikiId, pageId)
-    }
-
-    suspend fun getById(wikiId: Long, pageId: Long): Article? {
-        return articlesDao.getById(wikiId, pageId)
-    }
-
-    fun getAllByWikiIdLive(wikiId: Long): LiveData<List<Article>> {
+    fun getAllCachedByWikiIdLive(wikiId: Long): LiveData<List<Article>> {
         return articlesDao.getAllByWikiIdLive(wikiId)
     }
 
-    suspend fun getAllByWikiId(wikiId: Long): List<Article> {
+    suspend fun getAllCachedByWikiId(wikiId: Long): List<Article> {
         return articlesDao.getAllByWikiId(wikiId)
+    }
+
+    suspend fun insertIntoCache(article: Article): Long {
+        return articlesDao.insert(article)
+    }
+
+    suspend fun updateInCache(article: Article): Int {
+        return articlesDao.update(article)
+    }
+
+    suspend fun upsertIntoCache(article: Article): Long {
+        return articlesDao.upsert(article)
+    }
+
+    suspend fun deleteFromCache(article: Article): Int {
+        return articlesDao.delete(article)
+    }
+
+    suspend fun deleteByIdFromCache(wikiId: Long, pageId: Long): Int {
+        return articlesDao.deleteById(wikiId, pageId)
+    }
+
+    suspend fun deleteAllByWikiIdFromCache(wikiId: Long): Int {
+        return articlesDao.deleteAllByWikiId(wikiId)
+    }
+
+    fun searchCacheLive(wiki: Wiki, query: String): LiveData<List<Article>> {
+        return articlesDao.searchByTitleLive(wiki.id, query)
     }
 
     fun searchLive(wiki: Wiki, query: String): LiveData<List<Article>> {
         // TODO: if offline, search in local db. otherwise, search in api
-        return articlesDao.searchByTitleLive(wiki.id, query)
+        return searchCacheLive(wiki, query)
+    }
+
+    suspend fun searchCache(wiki: Wiki, query: String): List<Article> {
+        return articlesDao.searchByTitle(wiki.id, query)
     }
 
     suspend fun search(wiki: Wiki, query: String): List<Article> {
         // TODO: if offline, search in local db. otherwise, search in api
-        return articlesDao.searchByTitle(wiki.id, query)
+        return searchCache(wiki, query)
     }
 
-    // TODO: make this repository also do the api fetching to make it useful
+    // TODO: once api implemented here, remove use of the api from other classes
 }

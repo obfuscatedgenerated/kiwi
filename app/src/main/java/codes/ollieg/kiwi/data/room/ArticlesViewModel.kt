@@ -32,12 +32,12 @@ class ArticlesViewModel (application: Application) : AndroidViewModel(applicatio
 
     fun getAllByWikiId(wikiId: Long): List<Article> {
         return runBlocking {
-            repo.getAllByWikiId(wikiId)
+            repo.getAllCachedByWikiId(wikiId)
         }
     }
 
     fun getAllByWikiIdLive(wikiId: Long): LiveData<List<Article>> {
-        return repo.getAllByWikiIdLive(wikiId)
+        return repo.getAllCachedByWikiIdLive(wikiId)
     }
 
     fun searchByTitle(wikiId: Long, query: String): List<Article> {
@@ -52,37 +52,37 @@ class ArticlesViewModel (application: Application) : AndroidViewModel(applicatio
 
     fun insert(article: Article): Long {
         return runBlocking {
-            repo.insert(article)
+            repo.insertIntoCache(article)
         }
     }
 
     fun update(article: Article): Int {
         return runBlocking {
-            repo.update(article)
+            repo.updateInCache(article)
         }
     }
 
     fun upsert(article: Article): Long {
         return runBlocking {
-            repo.upsert(article)
+            repo.upsertIntoCache(article)
         }
     }
 
     fun delete(article: Article): Int {
         return runBlocking {
-            repo.delete(article)
+            repo.deleteFromCache(article)
         }
     }
 
     fun deleteById(wikiId: Long, pageId: Long): Int {
         return runBlocking {
-            repo.deleteById(wikiId, pageId)
+            repo.deleteByIdFromCache(wikiId, pageId)
         }
     }
 
     fun deleteAllByWikiId(wikiId: Long): Int {
         return runBlocking {
-            repo.deleteAllByWikiId(wikiId)
+            repo.deleteAllByWikiIdFromCache(wikiId)
         }
     }
 }
