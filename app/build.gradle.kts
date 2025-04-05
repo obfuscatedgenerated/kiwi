@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "codes.ollieg.kiwi"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "codes.ollieg.kiwi"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -65,7 +65,8 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
+    // using the latest alpha of material3 for the new searchbar implementation
+    implementation("androidx.compose.material3:material3:1.4.0-alpha11")
     implementation("androidx.navigation:navigation-compose:2.8.9")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
