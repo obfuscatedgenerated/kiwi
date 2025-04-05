@@ -42,12 +42,12 @@ class ArticlesViewModel (application: Application) : AndroidViewModel(applicatio
 
     fun searchByTitle(wikiId: Long, query: String): List<Article> {
         return runBlocking {
-            repo.searchByTitle(wikiId, query)
+            repo.search(wikiId, query)
         }
     }
 
     fun searchByTitleLive(wikiId: Long, query: String): LiveData<List<Article>> {
-        return repo.searchByTitleLive(wikiId, query)
+        return repo.searchLive(wikiId, query)
     }
 
     fun insert(article: Article): Long {

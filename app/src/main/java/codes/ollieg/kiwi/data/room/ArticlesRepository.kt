@@ -49,12 +49,14 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         return articlesDao.getAllByWikiId(wikiId)
     }
 
-    fun searchByTitleLive(wikiId: Long, query: String): LiveData<List<Article>> {
-        return articlesDao.searchByTitleLive(wikiId, query)
+    fun searchLive(wiki: Wiki, query: String): LiveData<List<Article>> {
+        // TODO: if offline, search in local db. otherwise, search in api
+        return articlesDao.searchByTitleLive(wiki.id, query)
     }
 
-    suspend fun searchByTitle(wikiId: Long, query: String): List<Article> {
-        return articlesDao.searchByTitle(wikiId, query)
+    suspend fun search(wiki: Wiki, query: String): List<Article> {
+        // TODO: if offline, search in local db. otherwise, search in api
+        return articlesDao.searchByTitle(wiki.id, query)
     }
 
     // TODO: make this repository also do the api fetching to make it useful
