@@ -34,7 +34,7 @@ fun KiwiNavHost(
             )) { context ->
 
             val wikiId = context.arguments?.getLong("wiki_id")!!
-            ScreenWikiHome(wikiId)
+            ScreenWikiHome(wikiId, navController)
         }
 
         // article screen

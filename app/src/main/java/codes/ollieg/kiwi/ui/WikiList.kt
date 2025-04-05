@@ -28,6 +28,7 @@ fun WikiList(
             val wiki = wikis[index]
             val subtext = subtexts?.getOrNull(index)
 
+            // TODO: adapt to listitem for consistency
             Row(
                 modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

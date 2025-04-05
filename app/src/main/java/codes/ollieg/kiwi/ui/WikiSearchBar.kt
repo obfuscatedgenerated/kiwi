@@ -1,16 +1,21 @@
 package codes.ollieg.kiwi.ui
 
+import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarValue
@@ -23,32 +28,94 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import codes.ollieg.kiwi.data.fromApiBase
+import codes.ollieg.kiwi.data.fetch
+import codes.ollieg.kiwi.data.room.Article
+import codes.ollieg.kiwi.data.withDefaultHeaders
 import codes.ollieg.kiwi.data.room.Wiki
+import codes.ollieg.kiwi.data.setQueryParameter
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 
-const val DEBOUNCE_TIME = 1000L
+const val DEBOUNCE_TIME = 1500L
+const val N_RESULTS = 15
 
-class WikiSearchViewModel : ViewModel() {
+class WikiSearchViewModel(private val wiki: Wiki) : ViewModel() {
     val liveInput = MutableStateFlow("")
 
     // don't want to spam the api too much, so debounce the input
     @OptIn(FlowPreview::class)
     val debouncedInput = liveInput.debounce(DEBOUNCE_TIME).distinctUntilChanged()
 
-    // TODO: update to Article entity
-    val searchResults = MutableStateFlow<List<String>>(emptyList())
+    val searchResults = MutableStateFlow<List<Article>>(emptyList())
 
     private fun updateSearch(query: String) {
-        // TODO: search with api url
-        // for now return a list of foo, bar, baz
-        searchResults.value = listOf<String>("foo", "bar", "baz").filter { it.contains(query, ignoreCase = true) }
+        if (query.isEmpty()) {
+            searchResults.value = emptyList()
+            return
+        }
+
+        // build the search request url safely
+        var searchUrl = fromApiBase(wiki.apiUrl, "?action=query&list=search&utf8=&format=json")
+        searchUrl = setQueryParameter(searchUrl, "srsearch", query)
+        searchUrl = setQueryParameter(searchUrl, "srlimit", N_RESULTS.toString())
+
+        Log.i("WikiSearchViewModel", "searchUrl: $searchUrl")
+
+        // launch a coroutine to fetch the search results and update the state
+        viewModelScope.launch (Dispatchers.IO) {
+            try {
+                val searchRes = fetch(searchUrl, withDefaultHeaders())
+                Log.i("WikiSearchViewModel", "searchRes: $searchRes")
+
+                // parse the json
+                val data = JSONObject(searchRes)
+                val searchData = data.getJSONObject("query").getJSONArray("search")
+                val articles = mutableListOf<Article>()
+
+                // iterate over the search results and create article objects
+                for (i in 0 until searchData.length()) {
+                    val entry = searchData.getJSONObject(i)
+                    val pageId = entry.getLong("pageid")
+                    val title = entry.getString("title")
+
+                    var snippetHtml: String? = null
+                    try {
+                        snippetHtml = entry.getString("snippet")
+                    } catch (e: Exception) {
+                        Log.e("WikiSearchViewModel", "Error getting snippet (or null)", e)
+                    }
+
+                    val article = Article(
+                        wikiId = wiki.id,
+                        pageId = pageId,
+                        title = title,
+                        snippetHtml = snippetHtml,
+                    )
+
+                    articles.add(article)
+                }
+
+                // update the search results state
+                if (articles.isEmpty()) {
+                    searchResults.value = emptyList()
+                } else {
+                    searchResults.value = articles
+                }
+            } catch (e: Exception) {
+                Log.e("WikiSearchViewModel", "Error fetching search results", e)
+                // TODO: graceful ui behaviour
+            }
+        }
     }
 
     init {
@@ -65,7 +132,8 @@ class WikiSearchViewModel : ViewModel() {
 @Composable
 fun WikiSearchBar(
     wiki: Wiki,
-    viewModel: WikiSearchViewModel = WikiSearchViewModel(),
+    viewModel: WikiSearchViewModel = WikiSearchViewModel(wiki),
+    onResultClick: ((Article) -> Unit)? = null,
 ) {
     var searchBarState = rememberSearchBarState()
     var textFieldState = rememberTextFieldState()
@@ -112,10 +180,42 @@ fun WikiSearchBar(
         state = searchBarState,
         inputField = inputField,
     ) {
-        searchResults.value.forEach {
-            Text(
-                text = it,
-                modifier = Modifier.padding(8.dp),
+        searchResults.value.forEach { article ->
+            // remove html tags from the snippet with regex
+            val snippetPlainText = article.snippetHtml?.replace(Regex("<[^>]*>"), "") ?: ""
+
+            ListItem(
+                modifier = Modifier.fillMaxWidth().clickable {
+                    Log.i("WikiSearchBar", "Clicked on article: ${article.title}")
+
+                    if (onResultClick != null) {
+                        onResultClick(article)
+                    } else {
+                        Log.i("WikiSearchBar", "No onResultClick provided")
+                    }
+                },
+                headlineContent = {
+                    Text(
+                        text = article.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                supportingContent = {
+                    Text(
+                        text = snippetPlainText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                trailingContent = {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowRight,
+                        contentDescription = null,
+                    )
+                },
             )
         }
     }
