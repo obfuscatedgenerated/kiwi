@@ -28,4 +28,6 @@ data class Article(
     var title: String,
     var snippetHtml: String? = null, // snippet of the article, null if not downloaded yet
     var contentHtml: String? = null, // html content of the article, null if not downloaded yet
+
+    var thumbnail: ByteArray? = null, // thumbnail of the article, null if not downloaded yet
 )
