@@ -239,3 +239,5 @@ fun WikiSearchBar(
         }
     }
 }
+
+// TODO: remember ui state for back navigation
