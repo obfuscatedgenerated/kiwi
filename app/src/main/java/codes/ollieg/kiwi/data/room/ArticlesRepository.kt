@@ -31,12 +31,12 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         return getByIdCached(wiki, pageId)
     }
 
-    fun getAllCachedByWikiIdLive(wikiId: Long): LiveData<List<Article>> {
-        return articlesDao.getAllByWikiIdLive(wikiId)
+    fun getAllCachedByWikiLive(wiki: Wiki): LiveData<List<Article>> {
+        return articlesDao.getAllByWikiIdLive(wiki.id)
     }
 
-    suspend fun getAllCachedByWikiId(wikiId: Long): List<Article> {
-        return articlesDao.getAllByWikiId(wikiId)
+    suspend fun getAllCachedByWiki(wiki: Wiki): List<Article> {
+        return articlesDao.getAllByWikiId(wiki.id)
     }
 
     suspend fun insertIntoCache(article: Article): Long {
@@ -55,12 +55,12 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         return articlesDao.delete(article)
     }
 
-    suspend fun deleteByIdFromCache(wikiId: Long, pageId: Long): Int {
-        return articlesDao.deleteById(wikiId, pageId)
+    suspend fun deleteByIdFromCache(wiki: Wiki, pageId: Long): Int {
+        return articlesDao.deleteById(wiki.id, pageId)
     }
 
-    suspend fun deleteAllByWikiIdFromCache(wikiId: Long): Int {
-        return articlesDao.deleteAllByWikiId(wikiId)
+    suspend fun deleteAllByWikiFromCache(wiki: Wiki): Int {
+        return articlesDao.deleteAllByWikiId(wiki.id)
     }
 
     fun searchCacheLive(wiki: Wiki, query: String): LiveData<List<Article>> {

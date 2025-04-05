@@ -13,76 +13,76 @@ class ArticlesViewModel (application: Application) : AndroidViewModel(applicatio
         repo = ArticlesRepository(articlesDao)
     }
 
-    val allArticles = repo.allArticlesLive
-    fun getAll(): List<Article> {
+    val allCachedArticles = repo.allCachedArticlesLive
+    fun getAllCached(): List<Article> {
         return runBlocking {
-            repo.getAll()
+            repo.getAllCached()
         }
     }
 
-    fun getById(wikiId: Long, pageId: Long): Article? {
+    fun getById(wiki: Wiki, pageId: Long): Article? {
         return runBlocking {
-            repo.getById(wikiId, pageId)
+            repo.getById(wiki, pageId)
         }
     }
 
-    fun getByIdLive(wikiId: Long, pageId: Long): LiveData<Article?> {
-        return repo.getByIdLive(wikiId, pageId)
+    fun getByIdLive(wiki: Wiki, pageId: Long): LiveData<Article?> {
+        return repo.getByIdLive(wiki, pageId)
     }
 
-    fun getAllByWikiId(wikiId: Long): List<Article> {
+    fun getAllCachedByWiki(wiki: Wiki): List<Article> {
         return runBlocking {
-            repo.getAllCachedByWikiId(wikiId)
+            repo.getAllCachedByWiki(wiki)
         }
     }
 
-    fun getAllByWikiIdLive(wikiId: Long): LiveData<List<Article>> {
-        return repo.getAllCachedByWikiIdLive(wikiId)
+    fun getAllByWikiLive(wiki: Wiki): LiveData<List<Article>> {
+        return repo.getAllCachedByWikiLive(wiki)
     }
 
-    fun searchByTitle(wikiId: Long, query: String): List<Article> {
+    fun search(wiki: Wiki, query: String): List<Article> {
         return runBlocking {
-            repo.search(wikiId, query)
+            repo.search(wiki, query)
         }
     }
 
-    fun searchByTitleLive(wikiId: Long, query: String): LiveData<List<Article>> {
-        return repo.searchLive(wikiId, query)
+    fun searchLive(wiki: Wiki, query: String): LiveData<List<Article>> {
+        return repo.searchLive(wiki, query)
     }
 
-    fun insert(article: Article): Long {
+    fun insertIntoCache(article: Article): Long {
         return runBlocking {
             repo.insertIntoCache(article)
         }
     }
 
-    fun update(article: Article): Int {
+    fun updateInCache(article: Article): Int {
         return runBlocking {
             repo.updateInCache(article)
         }
     }
 
-    fun upsert(article: Article): Long {
+    fun upsertIntoCache(article: Article): Long {
         return runBlocking {
             repo.upsertIntoCache(article)
         }
     }
 
-    fun delete(article: Article): Int {
+    fun deleteFromCache(article: Article): Int {
         return runBlocking {
             repo.deleteFromCache(article)
         }
     }
 
-    fun deleteById(wikiId: Long, pageId: Long): Int {
+    fun deleteByIdFromCache(wiki: Wiki, pageId: Long): Int {
         return runBlocking {
-            repo.deleteByIdFromCache(wikiId, pageId)
+            repo.deleteByIdFromCache(wiki, pageId)
         }
     }
 
-    fun deleteAllByWikiId(wikiId: Long): Int {
+    fun deleteAllByWikiFromCache(wiki: Wiki): Int {
         return runBlocking {
-            repo.deleteAllByWikiIdFromCache(wikiId)
+            repo.deleteAllByWikiFromCache(wiki)
         }
     }
 }
