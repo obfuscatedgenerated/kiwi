@@ -20,6 +20,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import codes.ollieg.kiwi.AppScreens
+import codes.ollieg.kiwi.data.room.ArticlesViewModel
 import codes.ollieg.kiwi.data.room.WikisViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -41,6 +42,8 @@ fun KiwiTopBar(
     val screen =
         navRoute?.substringBefore("/")?.let { AppScreens.valueOf(it) }
 
+    val articlesViewModel = ArticlesViewModel(wikisViewModel.getApplication())
+
     CenterAlignedTopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -57,9 +60,15 @@ fun KiwiTopBar(
                 }
 
                 AppScreens.Article -> {
-                    // get the article name argument
-                    // TODO: resolve to actual name from api, this is just the page slug
-                    navArgs?.getString("article") ?: "Article"
+                    // get the article title from the api and article id argument
+                    val articleId = navArgs?.getLong("article_id")!!
+                    val wikiId = navArgs?.getLong("wiki_id")!!
+
+                    // should update automatically, so no need to coordinate with the data fetching mechanism, it'll just show when it's ready
+                    val article = articlesViewModel.getByIdLive(wikisViewModel.getById(wikiId)!!, articleId).observeAsState()
+                    article.value?.title ?: "Loading..."
+
+                    // TODO: become left aligned and add action buttons. maybe its easier to override it all together
                 }
 
                 AppScreens.ManageWikis -> "Wikis"
