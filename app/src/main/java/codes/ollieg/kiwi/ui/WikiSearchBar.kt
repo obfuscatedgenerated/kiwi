@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
@@ -72,7 +73,7 @@ class WikiSearchViewModel(private val wiki: Wiki) : ViewModel() {
         Log.i("WikiSearchViewModel", "searchUrl: $searchUrl")
 
         // launch a coroutine to fetch the search results and update the state
-        viewModelScope.launch (Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 val searchRes = fetch(searchUrl, withDefaultHeaders())
                 Log.i("WikiSearchViewModel", "searchRes: $searchRes")
@@ -161,7 +162,10 @@ fun WikiSearchBar(
                             textFieldState.clearText()
                         },
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Close search")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Close search"
+                        )
                     }
                 } else {
                     Icon(Icons.Default.Search, contentDescription = null)
@@ -173,50 +177,62 @@ fun WikiSearchBar(
     SearchBar(
         state = searchBarState,
         inputField = inputField,
-        modifier = Modifier.fillMaxWidth().padding(8.dp).semantics { traversalIndex = 0f },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .semantics { traversalIndex = 0f },
     )
 
     ExpandedFullScreenSearchBar(
         state = searchBarState,
         inputField = inputField,
     ) {
-        searchResults.value.forEach { article ->
-            // remove html tags from the snippet with regex
-            val snippetPlainText = article.snippetHtml?.replace(Regex("<[^>]*>"), "") ?: ""
+        LazyColumn(
+        ) {
+            items(searchResults.value.size) { index ->
+                val article = searchResults.value[index]
 
-            ListItem(
-                modifier = Modifier.fillMaxWidth().clickable {
-                    Log.i("WikiSearchBar", "Clicked on article: ${article.title}")
+                // remove html tags from the snippet with regex
+                val snippetPlainText = article.snippetHtml?.replace(Regex("<[^>]*>"), "") ?: ""
 
-                    if (onResultClick != null) {
-                        onResultClick(article)
-                    } else {
-                        Log.i("WikiSearchBar", "No onResultClick provided")
-                    }
-                },
-                headlineContent = {
-                    Text(
-                        text = article.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
-                supportingContent = {
-                    Text(
-                        text = snippetPlainText,
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
-                trailingContent = {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowRight,
-                        contentDescription = null,
-                    )
-                },
-            )
+                ListItem(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            Log.i("WikiSearchBar", "Clicked on article: ${article.title}")
+
+                            if (onResultClick != null) {
+                                onResultClick(article)
+                            } else {
+                                Log.i("WikiSearchBar", "No onResultClick provided")
+                            }
+                        },
+                    headlineContent = {
+                        Text(
+                            text = article.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
+                    supportingContent = {
+                        Text(
+                            text = snippetPlainText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
+                    trailingContent = {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowRight,
+                            contentDescription = null,
+                        )
+                    },
+                )
+            }
+
+            // TODO: load next page of results if they scroll past the 15th result
         }
     }
 }

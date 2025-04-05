@@ -1,6 +1,7 @@
 package codes.ollieg.kiwi.ui
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DrawerState
@@ -31,21 +32,21 @@ fun KiwiTopBar(
     drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
     scope: CoroutineScope = rememberCoroutineScope(),
 ) {
+    // get navController context as state so it updates
+    val navState by navController.currentBackStackEntryAsState()
+    val navRoute = navState?.destination?.route
+    val navArgs = navState?.arguments
+
+    // get the current screen from the route
+    val screen =
+        navRoute?.substringBefore("/")?.let { AppScreens.valueOf(it) }
+
     CenterAlignedTopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             titleContentColor = MaterialTheme.colorScheme.primary
         ),
         title = {
-            // get navController context as state so it updates
-            val navState by navController.currentBackStackEntryAsState()
-            val navRoute = navState?.destination?.route
-            val navArgs = navState?.arguments
-
-            // get the current screen from the route
-            val screen =
-                navRoute?.substringBefore("/")?.let { AppScreens.valueOf(it) }
-
             // decide the title based on the current screen
             val title = when (screen) {
                 AppScreens.WikiHome -> {
@@ -70,17 +71,28 @@ fun KiwiTopBar(
             Text(text = title)
         },
         navigationIcon = {
-            IconButton(onClick = {
-                // toggle the drawer (uses a coroutine)
-                scope.launch {
-                    if (drawerState.isClosed) {
-                        drawerState.open()
-                    } else {
-                        drawerState.close()
-                    }
+            if (screen == AppScreens.Article) {
+                // show a back button to go back to the wiki home
+                IconButton(onClick = {
+                    // pop the back stack to go back to the previous screen
+                    navController.popBackStack()
+                }) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
-            }) {
-                Icon(Icons.Default.Menu, contentDescription = "Menu")
+            } else {
+                // hamburger icon to open nav drawer
+                IconButton(onClick = {
+                    // toggle the drawer (uses a coroutine)
+                    scope.launch {
+                        if (drawerState.isClosed) {
+                            drawerState.open()
+                        } else {
+                            drawerState.close()
+                        }
+                    }
+                }) {
+                    Icon(Icons.Default.Menu, contentDescription = "Menu")
+                }
             }
         }
     )
