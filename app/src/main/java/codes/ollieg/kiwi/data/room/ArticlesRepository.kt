@@ -6,7 +6,6 @@ import codes.ollieg.kiwi.data.fetch
 import codes.ollieg.kiwi.data.fromApiBase
 import codes.ollieg.kiwi.data.setQueryParameter
 import codes.ollieg.kiwi.data.withDefaultHeaders
-import codes.ollieg.kiwi.ui.N_RESULTS
 import org.json.JSONObject
 
 // this repository serves to get info about articles and their content
@@ -84,21 +83,31 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         }
 
         // otherwise, fetch the article from the api
+        // this uses the textextracts extension, so the add wiki check needs to check special:version to see if it's installed
+        // TODO: if textextracts isn't installed, could try to parse it here, but previously that didn't go very well
         // TODO: fetch article images
-        var articleUrl = fromApiBase(wiki.apiUrl, "?action=parse&utf8=&format=json&formatversion=2&prop=text")
-        articleUrl = setQueryParameter(articleUrl, "pageid", pageId.toString())
+        var articleUrl = fromApiBase(wiki.apiUrl, "?action=query&prop=extracts&explaintext=1&formatversion=2&format=json")
+        articleUrl = setQueryParameter(articleUrl, "pageids", pageId.toString())
 
         Log.i("ArticlesRepository", "articleUrl: $articleUrl")
 
-        var articleHtml: String? = null
+        var articleText: String? = null
         try {
             val articleRes = fetch(articleUrl, withDefaultHeaders())
             Log.i("ArticlesRepository", "articleRes: $articleRes")
 
             // parse the json
             val data = JSONObject(articleRes)
-            val parseData = data.getJSONObject("parse")
-            articleHtml = parseData.getString("text")
+            val queryData = data.getJSONObject("query")
+            val pagesData = queryData.getJSONArray("pages")
+
+            // if there is a page, try to get the extract
+            if (pagesData.length() > 0) {
+                val page = pagesData.getJSONObject(0)
+                articleText = page.getString("extract")
+            } else {
+                Log.e("ArticlesRepository", "no pages found for page $pageId")
+            }
         } catch (e: Exception) {
             Log.e("ArticlesRepository", "Error fetching article", e)
         }
@@ -115,8 +124,8 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
             wikiId = wiki.id,
             pageId = pageId,
             title = title,
-            snippetHtml = cached?.snippetHtml, // TODO: should we fetch a snippet? its used for search
-            contentHtml = articleHtml,
+            parsedSnippet = cached?.parsedSnippet, // TODO: should we fetch a snippet? its used for search
+            parsedContent = articleText,
             thumbnail = cached?.thumbnail, // TODO: when should thumbnails be fetched?
             revisionId = latestRevId,
             updateTime = System.currentTimeMillis()

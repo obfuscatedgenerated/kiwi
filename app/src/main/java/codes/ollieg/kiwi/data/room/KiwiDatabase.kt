@@ -44,7 +44,20 @@ val MIGRATION_2_3_NOT_NULL_AUTH = object : Migration(2, 3) {
     }
 }
 
-@Database(entities = [Wiki::class, Article::class], version = 5, autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 3, to = 4), AutoMigration(from = 4, to = 5)])
+val MIGRATION_5_6_RENAME_FIELDS_AND_DELETE_ALL_ARTICLES = object : Migration(5, 6) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        // delete all articles
+        database.execSQL("DELETE FROM Articles;")
+
+        // rename content field
+        database.execSQL("ALTER TABLE Articles RENAME COLUMN `contentHtml` TO `parsedContent`;")
+
+        // rename snippet field
+        database.execSQL("ALTER TABLE Articles RENAME COLUMN `snippetHtml` TO `parsedSnippet`;")
+    }
+}
+
+@Database(entities = [Wiki::class, Article::class], version = 6, autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 3, to = 4), AutoMigration(from = 4, to = 5)])
 abstract class KiwiDatabase: RoomDatabase(){
     abstract fun wikisDao(): WikisDao
     abstract fun articlesDao(): ArticlesDao
@@ -55,7 +68,7 @@ abstract class KiwiDatabase: RoomDatabase(){
         fun getDatabase(context: Context): KiwiDatabase {
             // if the Instance is not null, return it, otherwise create a new database instance.
             return Instance ?: synchronized(this) {
-                Room.databaseBuilder(context, KiwiDatabase::class.java, "kiwi").addMigrations(MIGRATION_2_3_NOT_NULL_AUTH)
+                Room.databaseBuilder(context, KiwiDatabase::class.java, "kiwi").addMigrations(MIGRATION_2_3_NOT_NULL_AUTH, MIGRATION_5_6_RENAME_FIELDS_AND_DELETE_ALL_ARTICLES)
                     .build().also {
                         // need a coroutine scope to run the insert in the background
                         CoroutineScope(Dispatchers.IO).launch {

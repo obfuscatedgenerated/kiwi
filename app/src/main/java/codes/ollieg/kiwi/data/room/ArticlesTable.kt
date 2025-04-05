@@ -26,8 +26,8 @@ data class Article(
     var pageId: Long, // the page id used by the mediawiki api
 
     var title: String,
-    var snippetHtml: String? = null, // snippet of the article, null if not downloaded yet
-    var contentHtml: String? = null, // html content of the article, null if not downloaded yet
+    var parsedSnippet: String? = null, // snippet of the article that doesn't contain html, null if not downloaded yet
+    var parsedContent: String? = null, // content of the article that doesn't contain html, null if not downloaded yet
 
     var thumbnail: ByteArray? = null, // thumbnail of the article, null if not downloaded yet
 

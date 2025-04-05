@@ -29,6 +29,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -98,11 +100,13 @@ class WikiSearchViewModel(private val wiki: Wiki) : ViewModel() {
                         Log.e("WikiSearchViewModel", "Error getting snippet (or null)", e)
                     }
 
+                    var parsedSnippet = AnnotatedString.fromHtml(snippetHtml ?: "")
+
                     val article = Article(
                         wikiId = wiki.id,
                         pageId = pageId,
                         title = title,
-                        snippetHtml = snippetHtml,
+                        parsedSnippet = parsedSnippet.toString(),
                     )
 
                     articles.add(article)
@@ -194,9 +198,6 @@ fun WikiSearchBar(
             items(searchResults.value.size) { index ->
                 val article = searchResults.value[index]
 
-                // remove html tags from the snippet with regex
-                val snippetPlainText = article.snippetHtml?.replace(Regex("<[^>]*>"), "") ?: ""
-
                 ListItem(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -219,7 +220,7 @@ fun WikiSearchBar(
                     },
                     supportingContent = {
                         Text(
-                            text = snippetPlainText,
+                            text = article.parsedSnippet ?: "No preview available.",
                             style = MaterialTheme.typography.bodyMedium,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,

@@ -3,6 +3,7 @@ package codes.ollieg.kiwi.ui
 import android.app.Application
 import android.util.Log
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
@@ -42,14 +43,19 @@ fun ScreenArticle(
         )
         // TODO: some way to know if it started null or was posted. could check for state update ig?
     } else {
-        // use regex to strip html tags
-        // TODO: this keeps the css data!
-        // TODO: use web view or some other handling to look at html
-        val contentPlainText = article.value!!.contentHtml!!.replace(Regex("<[^>]*>"), "")
+        var parsed = article.value!!.parsedContent!!
 
-        Text(
-            text = contentPlainText,
-            modifier = Modifier.padding(16.dp)
-        )
+        // TODO: make headings bigger based on number of equals (could try annotated string?)
+
+        LazyColumn {
+            item {
+                Text(
+                    text = parsed,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
     }
 }
+
+// TODO: scroll to top button
