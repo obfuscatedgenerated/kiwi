@@ -44,9 +44,10 @@ val MIGRATION_2_3_NOT_NULL_AUTH = object : Migration(2, 3) {
     }
 }
 
-@Database(entities = [Wiki::class], version = 3, autoMigrations = [AutoMigration(from = 1, to = 2)])
+@Database(entities = [Wiki::class, Article::class], version = 4, autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 3, to = 4)])
 abstract class KiwiDatabase: RoomDatabase(){
     abstract fun wikisDao(): WikisDao
+    abstract fun articlesDao(): ArticlesDao
 
     companion object {
         @Volatile
