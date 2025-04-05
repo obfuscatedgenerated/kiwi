@@ -30,4 +30,7 @@ data class Article(
     var contentHtml: String? = null, // html content of the article, null if not downloaded yet
 
     var thumbnail: ByteArray? = null, // thumbnail of the article, null if not downloaded yet
+
+    var revisionId: Long? = null, // revision id of the article, null if not downloaded yet
+    var updateTime: Long? = null, // when the revision id was last checked (in ms since epoch)
 )

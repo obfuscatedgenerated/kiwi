@@ -20,14 +20,10 @@ class ArticlesViewModel (application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun getById(wiki: Wiki, pageId: Long): Article? {
+    fun getById(wiki: Wiki, pageId: Long, skipCache: Boolean = false): Article? {
         return runBlocking {
             repo.getById(wiki, pageId)
         }
-    }
-
-    fun getByIdLive(wiki: Wiki, pageId: Long): LiveData<Article?> {
-        return repo.getByIdLive(wiki, pageId)
     }
 
     fun getAllCachedByWiki(wiki: Wiki): List<Article> {
@@ -36,18 +32,14 @@ class ArticlesViewModel (application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun getAllByWikiLive(wiki: Wiki): LiveData<List<Article>> {
+    fun getAllCachedByWikiLive(wiki: Wiki): LiveData<List<Article>> {
         return repo.getAllCachedByWikiLive(wiki)
     }
 
-    fun search(wiki: Wiki, query: String): List<Article> {
+    fun search(wiki: Wiki, query: String, skipCache: Boolean = false): List<Article> {
         return runBlocking {
             repo.search(wiki, query)
         }
-    }
-
-    fun searchLive(wiki: Wiki, query: String): LiveData<List<Article>> {
-        return repo.searchLive(wiki, query)
     }
 
     fun insertIntoCache(article: Article): Long {
