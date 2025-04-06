@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -110,6 +111,7 @@ fun DialogWikiEdit(
         dragHandle = null, // as well as hiding the drag handle
     ) {
         Scaffold(
+            containerColor = Color.Transparent,
             modifier = Modifier
                 .safeDrawingPadding()
                 .fillMaxSize()
