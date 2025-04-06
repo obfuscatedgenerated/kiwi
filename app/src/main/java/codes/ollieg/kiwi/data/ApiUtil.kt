@@ -1,5 +1,7 @@
 package codes.ollieg.kiwi.data
 
+import android.content.Context
+import android.net.ConnectivityManager
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
@@ -7,6 +9,14 @@ import java.io.InputStreamReader
 import java.net.URL
 import java.net.URLEncoder
 import javax.net.ssl.HttpsURLConnection
+
+fun checkOnline(context: Context): Boolean {
+    // check if the device is connected to the internet
+    // this api is deprecated, but i couldn't find another way that works nicely with broadcast receivers
+    val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val networkInfo = connectivityManager.activeNetworkInfo
+    return networkInfo != null && networkInfo.isConnected
+}
 
 // The helper function that sends a GET request to the URL, returns the response in JSON string
 fun fetch(url: String, headers: Map<String, String> = emptyMap()): String {

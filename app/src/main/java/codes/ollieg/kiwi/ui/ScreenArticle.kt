@@ -9,7 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import codes.ollieg.kiwi.data.room.ArticlesViewModel
 import codes.ollieg.kiwi.data.room.WikisViewModel
 
@@ -47,11 +49,17 @@ fun ScreenArticle(
 
         // TODO: make headings bigger based on number of equals (could try annotated string?)
 
+        // double any newline characters to make paragraphs more readable
+        // TODO: split paragraphs into separate text elements to make lazy loading more efficient
+        parsed = parsed.replace("\n", "\n\n")
+
         LazyColumn {
             item {
                 Text(
                     text = parsed,
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
+                    lineHeight = 32.sp, // more readable TODO: configurable
+                    fontFamily = FontFamily.Serif // TODO: connect to preference system
                 )
             }
         }

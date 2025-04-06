@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -18,6 +17,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
+import codes.ollieg.kiwi.data.checkOnline
 import codes.ollieg.kiwi.data.room.WikisViewModel
 import codes.ollieg.kiwi.ui.KiwiNavDrawer
 import codes.ollieg.kiwi.ui.KiwiTopBar
@@ -34,14 +34,6 @@ enum class AppScreens {
 
 class ConnectionChangeReceiver : BroadcastReceiver {
     var lastOnlineValue: Boolean? = null
-
-    fun checkOnline(context: Context): Boolean {
-        // check if the device is connected to the internet
-        // this api is deprecated, but i couldn't find another way that works nicely with broadcast receivers
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkInfo = connectivityManager.activeNetworkInfo
-        return networkInfo != null && networkInfo.isConnected
-    }
 
     constructor(context: Context) : super() {
         // set initial value for lastOnlineValue
