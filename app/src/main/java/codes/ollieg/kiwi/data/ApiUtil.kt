@@ -13,10 +13,13 @@ import javax.net.ssl.HttpsURLConnection
 fun checkOnline(context: Context): Boolean {
     // check if the device is connected to the internet
     // this api is deprecated, but i couldn't find another way that works nicely with broadcast receivers
+    // TODO: update
     val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     val networkInfo = connectivityManager.activeNetworkInfo
     return networkInfo != null && networkInfo.isConnected
 }
+
+// TODO: implement auth from wiki entity
 
 // The helper function that sends a GET request to the URL, returns the response in JSON string
 fun fetch(url: String, headers: Map<String, String> = emptyMap()): String {

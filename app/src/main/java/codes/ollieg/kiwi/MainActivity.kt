@@ -32,10 +32,10 @@ enum class AppScreens {
     OtherSettings,
 }
 
-class ConnectionChangeReceiver : BroadcastReceiver {
+class ConnectionChangeReceiver : BroadcastReceiver() {
     var lastOnlineValue: Boolean? = null
 
-    constructor(context: Context) : super() {
+    fun setInitialValue(context: Context) {
         // set initial value for lastOnlineValue
         lastOnlineValue = checkOnline(context)
         Log.i("ConnectionChangeReceiver", "Initial connection state: $lastOnlineValue")
@@ -64,14 +64,29 @@ class ConnectionChangeReceiver : BroadcastReceiver {
 }
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    var connChangeReceiver = ConnectionChangeReceiver()
+
+    override fun onResume() {
+        super.onResume()
 
         // register receiver to show toast when device connects to or loses connection to the internet
-        val connChangeReceiver = ConnectionChangeReceiver(this)
+        // TODO: move this to onResume() and unregister in onPause() to avoid memory leaks
+        // TODO: use newer callback if approved
         val connChangeReceiverFlags = ContextCompat.RECEIVER_NOT_EXPORTED
         val connChangeFilter = IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
         ContextCompat.registerReceiver(this, connChangeReceiver, connChangeFilter, connChangeReceiverFlags)
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // unregister receiver to avoid memory leaks
+        unregisterReceiver(connChangeReceiver)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        connChangeReceiver.setInitialValue(this.applicationContext)
 
         setContent {
             val navController = rememberNavController()
