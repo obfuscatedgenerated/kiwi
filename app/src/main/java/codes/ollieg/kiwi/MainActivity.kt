@@ -70,7 +70,6 @@ class MainActivity : ComponentActivity() {
         super.onResume()
 
         // register receiver to show toast when device connects to or loses connection to the internet
-        // TODO: move this to onResume() and unregister in onPause() to avoid memory leaks
         // TODO: use newer callback if approved
         val connChangeReceiverFlags = ContextCompat.RECEIVER_NOT_EXPORTED
         val connChangeFilter = IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
