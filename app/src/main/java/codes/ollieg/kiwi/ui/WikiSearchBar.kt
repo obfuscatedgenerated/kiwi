@@ -62,12 +62,15 @@ class WikiSearchViewModel(private val wiki: Wiki) : ViewModel() {
     val debouncedInput = liveInput.debounce(DEBOUNCE_TIME).distinctUntilChanged()
 
     val searchResults = MutableStateFlow<List<Article>>(emptyList())
+    var runningSearch = MutableStateFlow(false)
 
     private fun updateSearch(query: String) {
         if (query.isEmpty()) {
             searchResults.value = emptyList()
             return
         }
+
+        runningSearch.value = true
 
         // build the search request url safely
         var searchUrl = fromApiBase(wiki.apiUrl, "?action=query&list=search&utf8=&format=json")
@@ -118,6 +121,8 @@ class WikiSearchViewModel(private val wiki: Wiki) : ViewModel() {
                 } else {
                     searchResults.value = articles
                 }
+
+                runningSearch.value = false
             } catch (e: Exception) {
                 Log.e("WikiSearchViewModel", "Error fetching search results", e)
                 // TODO: graceful ui behaviour
@@ -147,6 +152,8 @@ fun WikiSearchBar(
     val scope = rememberCoroutineScope()
 
     val searchResults = viewModel.searchResults.collectAsState()
+    val runningSearch = viewModel.runningSearch.collectAsState()
+    val debouncedInput = viewModel.debouncedInput.collectAsState("")
 
     // side effect to update view model when text field changes
     LaunchedEffect(textFieldState.text) {
@@ -193,6 +200,29 @@ fun WikiSearchBar(
         state = searchBarState,
         inputField = inputField,
     ) {
+        // show something if debounced input is empty
+        if (debouncedInput.value.isEmpty()) {
+            return@ExpandedFullScreenSearchBar Text(
+                text = "Type something to search...",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(16.dp),
+            )
+        }
+
+        // show a loading indicator if the search is running
+        if (runningSearch.value == true) {
+            return@ExpandedFullScreenSearchBar CenteredLoader()
+        }
+
+        // empty state
+        if (searchResults.value.isEmpty()) {
+            return@ExpandedFullScreenSearchBar Text(
+                text = "No results found.",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(16.dp),
+            )
+        }
+
         LazyColumn(
         ) {
             items(searchResults.value.size) { index ->

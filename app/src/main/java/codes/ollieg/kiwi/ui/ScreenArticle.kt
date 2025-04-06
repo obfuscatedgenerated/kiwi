@@ -30,22 +30,20 @@ fun ScreenArticle(
     val wiki = wikisViewModel.getById(wikiId)!!
     val article = articlesViewModel.getByIdLive(wiki, articleId).observeAsState()
 
-//    if (article.value == null) {
-//        Log.i("ScreenArticle", "Article is null")
-//        return Text(
-//            text = "Couldn't load article",
-//            modifier = Modifier.padding(16.dp)
-//        )
-//    }
+    // TODO: pull to refresh (use skipCache = true when loading article)
 
     if (article.value == null) {
-        Text(
-            text = "Loading article...",
-            modifier = Modifier.padding(16.dp)
-        )
-        // TODO: some way to know if it started null or was posted. could check for state update ig?
+        CenteredLoader()
+        // TODO: might get stuck if cache value is also null, might need to return explcitly "false" when that happens or do a timeout
     } else {
-        var parsed = article.value!!.parsedContent!!
+        var parsed = article.value!!.parsedContent
+
+        if (parsed == null) {
+            return Text(
+                text = "Couldn't load article",
+                modifier = Modifier.padding(16.dp)
+            )
+        }
 
         // TODO: make headings bigger based on number of equals (could try annotated string?)
 
@@ -58,7 +56,7 @@ fun ScreenArticle(
                 Text(
                     text = parsed,
                     modifier = Modifier.padding(16.dp),
-                    lineHeight = 32.sp, // more readable TODO: configurable
+                    lineHeight = 24.sp, // more readable TODO: configurable
                     fontFamily = FontFamily.Serif // TODO: connect to preference system
                 )
             }
