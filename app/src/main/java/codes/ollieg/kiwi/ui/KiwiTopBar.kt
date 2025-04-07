@@ -79,11 +79,17 @@ private fun ArticleSpecificTopBar(
             IconButton(
                 onClick = {}
             ) {
-                // TODO: if not starred, make outlined, if starred, make filled
+                // use filled star icon for starred articles, outlined for non-starred
                 // n.b. it isn't just outlined/filled. starborder and star are different icons
                 // using outlined and filled properly still for compatibility in case that changes
+                val starIcon = if (article.value?.starred == true) {
+                    Icons.Filled.Star
+                } else {
+                    Icons.Outlined.StarBorder
+                }
+
                 Icon(
-                    Icons.Outlined.StarBorder,
+                    starIcon,
                     contentDescription = "Add article to starred list",
                 )
             }

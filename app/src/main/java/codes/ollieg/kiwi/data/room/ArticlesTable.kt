@@ -1,5 +1,6 @@
 package codes.ollieg.kiwi.data.room
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -24,6 +25,8 @@ import androidx.room.Index
 data class Article(
     var wikiId: Long, // the wiki this article belongs to, stored in kiwi
     var pageId: Long, // the page id used by the mediawiki api
+
+    @ColumnInfo(defaultValue = "FALSE") var starred: Boolean = false, // whether the user has added the article to their starred list
 
     var title: String,
     var parsedSnippet: String? = null, // snippet of the article that doesn't contain html, null if not downloaded yet
