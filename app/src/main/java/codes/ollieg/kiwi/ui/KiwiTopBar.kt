@@ -114,6 +114,9 @@ private fun ArticleSpecificTopBar(
                     }
 
                     // open the article in the browser with an intent
+                    // IMPORTANT: emulator bug - emulator will crash when opening chrome!
+                    // disable vulkan rendering following this guide:
+                    // https://stackoverflow.com/a/70842795/19678893
                     val intent = Intent(Intent.ACTION_VIEW)
                     intent.data = url.toUri()
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
