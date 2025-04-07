@@ -34,6 +34,11 @@
     <string name="nav_manage_storage">Manage offline storage</string>
     <string name="nav_other_settings">Other settings</string>
 
+    <string name="screen_title_manage_wikis">Wikis</string>
+    <string name="screen_title_offline_storage">Offline storage</string>
+    <string name="screen_title_other_settings">Other settings</string>
+
+    <string name="menu">Menu</string>
     <string name="back">Back</string>
 
     <string name="starred_article">Starred %1$s!</string>

@@ -252,17 +252,17 @@ fun KiwiTopBar(
                     // get the wiki name from the id argument
                     val wikiId = navArgs?.getLong("wiki_id")!!
                     val wiki by wikisViewModel.getByIdLive(wikiId).observeAsState()
-                    wiki?.name ?: "Loading..."
+                    wiki?.name ?: stringResource(R.string.loading)
                 }
 
 //                AppScreens.Article -> {
 //                    (top bar now completely overridden by ArticleSpecificTopBar)
 //                }
 
-                AppScreens.ManageWikis -> "Wikis"
-                AppScreens.ManageStorage -> "Offline storage"
-                AppScreens.OtherSettings -> "Other settings"
-                else -> "KiWi"
+                AppScreens.ManageWikis -> stringResource(R.string.screen_title_manage_wikis)
+                AppScreens.ManageStorage -> stringResource(R.string.screen_title_offline_storage)
+                AppScreens.OtherSettings -> stringResource(R.string.screen_title_other_settings)
+                else -> stringResource(R.string.app_name)
             }
 
             Text(text = title, textAlign = TextAlign.Left)
@@ -279,7 +279,7 @@ fun KiwiTopBar(
                     }
                 }
             }) {
-                Icon(Icons.Default.Menu, contentDescription = "Menu")
+                Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.menu))
             }
         }
     )
