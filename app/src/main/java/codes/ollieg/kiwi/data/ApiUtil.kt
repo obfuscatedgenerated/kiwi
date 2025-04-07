@@ -10,6 +10,8 @@ import java.net.URL
 import java.net.URLEncoder
 import javax.net.ssl.HttpsURLConnection
 
+// TODO: switch to ktor and auto store cookies so it can login to authenticated wikis https://ktor.io/docs/client-cookies.html
+
 fun checkOnline(context: Context): Boolean {
     // check if the device is connected to the internet
     // this api is deprecated, but i couldn't find another way that works nicely with broadcast receivers
