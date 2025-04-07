@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">KiWi</string>
+    <string name="app_name" translatable="false">KiWi</string>
 
     <string name="device_offline">Your device just went offline.\nOnly offline articles are available.</string>
     <string name="back_online">Back online!</string>
