@@ -1,5 +1,7 @@
 # KiWi
 
+Kiwi illustration by <a href="https://pixabay.com/users/clker-free-vector-images-3736/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=36015">Clker-Free-Vector-Images</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=36015">Pixabay</a>
+
 ### Mandatory requirements (25%)
 #### Your application should:
 
