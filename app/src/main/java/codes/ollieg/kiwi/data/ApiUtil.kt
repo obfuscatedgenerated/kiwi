@@ -94,8 +94,6 @@ suspend fun logInToMediawiki(apiUrl: String, username: String, password: String)
         append("lgtoken", token)
     })
 
-    Log.i("ApiUtil", "loginBody: $loginBody")
-
     val loginUrl = fromApiBase(apiUrl, "?action=login&format=json")
     val loginResponse = fetch(loginUrl, withDefaultHeaders(), HttpMethod.Post, loginBody)
 
