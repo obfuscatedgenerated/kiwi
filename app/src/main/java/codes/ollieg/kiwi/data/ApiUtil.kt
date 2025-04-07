@@ -2,15 +2,36 @@ package codes.ollieg.kiwi.data
 
 import android.content.Context
 import android.net.ConnectivityManager
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.cookies.HttpCookies
+import io.ktor.client.plugins.cookies.cookies
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.header
+import io.ktor.client.request.request
+import io.ktor.client.request.setBody
+import io.ktor.http.HttpMethod
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.net.URL
 import java.net.URLEncoder
-import javax.net.ssl.HttpsURLConnection
 
-// TODO: switch to ktor and auto store cookies so it can login to authenticated wikis https://ktor.io/docs/client-cookies.html
+// 3rd party library used in this file: ktor
+// purpose: to make http requests with a cookie store in a cleaner way than httpsurlconnection
+// https://ktor.io/docs/welcome.html
+// https://github.com/ktorio/ktor/blob/main/LICENSE
+
+private val client = HttpClient(CIO) {
+    // throw errors for non ok responses
+    expectSuccess = true
+
+    install(Logging)
+    install(HttpCookies)
+}
 
 fun checkOnline(context: Context): Boolean {
     // check if the device is connected to the internet
@@ -23,58 +44,69 @@ fun checkOnline(context: Context): Boolean {
 
 // TODO: implement auth from wiki entity
 
-// The helper function that sends a GET request to the URL, returns the response in JSON string
-fun fetch(url: String, headers: Map<String, String> = emptyMap()): String {
-    var result = ""
-    var conn: HttpsURLConnection? = null
-    try {
-        // create the connection
-        val request = URL(url)
-        conn = request.openConnection() as
-                HttpsURLConnection
+// simpler wrapper around the ktor client
+suspend fun fetch(url: String, headers: Map<String, String> = emptyMap(), httpMethod: HttpMethod = HttpMethod.Get, body: String? = null): String {
+    val response = client.request(url) {
+        method = httpMethod
 
-        // set the request method
-        conn.requestMethod = "GET"
-
-        // set the request headers
-        for ((key, value) in headers) {
-            conn.setRequestProperty(key, value)
+        headers.forEach { (key, value) ->
+            header(key, value)
         }
 
-        // send the request
-        conn.connect()
-
-        // read the response
-        val inStrea: InputStream =
-            conn.inputStream
-        result =
-            convertInputStreamToString(inStrea)
-    } catch (e: Exception) {
-        e.printStackTrace()
-    } finally {
-        conn?.disconnect()
+        if (body != null) {
+            setBody(body)
+        }
     }
-    return result //returns the fetched JSON string
+
+    return response.body()
 }
 
-fun fetch(url: URL, headers: Map<String, String> = emptyMap()): String {
-    return fetch(url.toString(), headers)
+suspend fun fetch(url: URL, headers: Map<String, String> = emptyMap(), httpMethod: HttpMethod = HttpMethod.Get, body: String? = null): String {
+    return fetch(url.toString(), headers, httpMethod, body)
 }
 
-// The helper function that converts the input stream to String
-@Throws(IOException::class)
-private fun convertInputStreamToString(inS: InputStream): String {
-    val bufferedReader = BufferedReader(InputStreamReader(inS))
-    val result = StringBuilder()
-    var line: String?
+// uses the client to log in to a mediawiki and persists the session in memory
+suspend fun logInToMediawiki(apiUrl: String, username: String, password: String) {
+    // (not using try catch here, just have it throw an error if anything is wrong)
 
-    // Read out the input stream buffer line by line until it's empty
-    while (bufferedReader.readLine().also { line = it } != null) {
-        result.append(line)
+    // get a login token
+    val tokenUrl = fromApiBase(apiUrl, "?action=query&meta=tokens&type=login&format=json")
+    val loginToken = fetch(tokenUrl, withDefaultHeaders())
+
+    // parse the json
+    val data = JSONObject(loginToken)
+    val token = data.getJSONObject("query").getJSONObject("tokens").getString("logintoken")
+
+    // log in with the token
+    val loginBody = JSONObject()
+    loginBody.put("lgname", username)
+    loginBody.put("lgpassword", password)
+    loginBody.put("lgtoken", token)
+    val loginUrl = fromApiBase(apiUrl, "?action=login&format=json")
+    val loginResponse = fetch(loginUrl, withDefaultHeaders(), HttpMethod.Post, loginBody.toString())
+
+    // parse the json
+    val loginData = JSONObject(loginResponse)
+    val loginResult = loginData.getJSONObject("login").getString("result")
+
+    if (loginResult != "Success") {
+        throw Exception("Login failed: $loginResult")
     }
-    // Close the input stream and return
-    inS.close()
-    return result.toString()
+
+    // success!
+}
+
+suspend fun isLoggedInToMediawiki(apiUrl: String, username: String): Boolean {
+    // check the cookie store for the login session
+    client.cookies(apiUrl).forEach { cookie ->
+        // different mediawiki versions and instances have different cookie names, so just search for the username in the values
+        if (cookie.value == username) {
+            return true
+        }
+    }
+
+    // if no cookie was found, return false
+    return false
 }
 
 // sets some default headers needed for mediawiki but allows for more to be added

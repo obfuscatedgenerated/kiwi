@@ -71,8 +71,14 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.4")
     implementation("androidx.room:room-common:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
     implementation("androidx.compose.runtime:runtime-livedata")
+
+    implementation("io.ktor:ktor-client-core:3.1.2")
+    implementation("io.ktor:ktor-client-cio:3.1.2")
+    implementation("io.ktor:ktor-client-logging:3.1.2")
+
+    ksp("androidx.room:room-compiler:2.6.1")
+
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
