@@ -1,5 +1,8 @@
 package codes.ollieg.kiwi.ui
 
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
@@ -24,6 +27,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.core.net.toUri
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -95,7 +99,27 @@ private fun ArticleSpecificTopBar(
             }
 
             IconButton(
-                onClick = {}
+                onClick = {
+                    val context = wikisViewModel.getApplication() as Context
+
+                    // if no url is defined on the article, show a toast
+                    val url = article.value?.pageUrl
+                    if (url == null) {
+                        Toast.makeText(
+                            context,
+                            "Sorry, couldn't find a URL for this article.\nPlease refresh or try again later.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        return@IconButton
+                    }
+
+                    // open the article in the browser with an intent
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.data = url.toUri()
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+                    context.startActivity(intent)
+                }
             ) {
                 Icon(
                     Icons.Outlined.Language,

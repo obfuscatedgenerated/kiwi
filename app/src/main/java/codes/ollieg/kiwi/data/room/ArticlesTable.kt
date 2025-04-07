@@ -36,4 +36,6 @@ data class Article(
 
     var revisionId: Long? = null, // revision id of the article, null if not downloaded yet
     var updateTime: Long? = null, // when the revision id was last checked (in ms since epoch)
+
+    var pageUrl: String? = null, // url of the article in the browser, null if not downloaded yet
 )

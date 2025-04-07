@@ -84,16 +84,18 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
 
         // otherwise, fetch the article from the api
         // this uses the textextracts extension, so the add wiki check needs to check special:version to see if it's installed
+        // this request also gets the url with the info prop
         // TODO: if textextracts isn't installed, could try to parse it here, but previously that didn't go very well
         // TODO: fetch article images
-        var articleUrl = fromApiBase(wiki.apiUrl, "?action=query&prop=extracts&explaintext=1&formatversion=2&format=json")
-        articleUrl = setQueryParameter(articleUrl, "pageids", pageId.toString())
+        var requestUrl = fromApiBase(wiki.apiUrl, "?action=query&prop=extracts|info&explaintext=1&inprop=url&formatversion=2&format=json")
+        requestUrl = setQueryParameter(requestUrl, "pageids", pageId.toString())
 
-        Log.i("ArticlesRepository", "articleUrl: $articleUrl")
+        Log.i("ArticlesRepository", "articleUrl: $requestUrl")
 
         var articleText: String? = null
+        var articlePageUrl: String? = null
         try {
-            val articleRes = fetch(articleUrl, withDefaultHeaders())
+            val articleRes = fetch(requestUrl, withDefaultHeaders())
             Log.i("ArticlesRepository", "articleRes: $articleRes")
 
             // parse the json
@@ -105,6 +107,7 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
             if (pagesData.length() > 0) {
                 val page = pagesData.getJSONObject(0)
                 articleText = page.getString("extract")
+                articlePageUrl = page.getString("fullurl")
             } else {
                 Log.e("ArticlesRepository", "no pages found for page $pageId")
             }
@@ -123,10 +126,15 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         val article = Article(
             wikiId = wiki.id,
             pageId = pageId,
+
             title = title,
+
             parsedSnippet = cached?.parsedSnippet, // TODO: should we fetch a snippet? its used for search
             parsedContent = articleText,
             thumbnail = cached?.thumbnail, // TODO: when should thumbnails be fetched?
+
+            pageUrl = articlePageUrl,
+
             revisionId = latestRevId,
             updateTime = System.currentTimeMillis()
         )
