@@ -13,7 +13,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import codes.ollieg.kiwi.R
 import codes.ollieg.kiwi.data.room.ArticlesViewModel
 import codes.ollieg.kiwi.data.room.WikisViewModel
 
@@ -38,7 +41,7 @@ fun ScreenManageStorage(
                 )
 
                 Text(
-                    text = "Clear all",
+                    text = stringResource(R.string.clear_all),
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }
@@ -51,40 +54,37 @@ fun ScreenManageStorage(
                 val storage = articlesViewModel.estimateOfflineStorageUsageForWikiLive(wiki).observeAsState()
 
                 if (storage.value?.bytes == null) {
-                    return@map "Estimating usage..."
+                    return@map stringResource(R.string.estimating_usage)
                 }
 
                 // format bytes to the cleanest unit
-                var unit = " bytes"
-                var value = storage.value?.bytes ?: 0L
+                var byteUnit = R.string.bytes
+                var byteValue = storage.value?.bytes ?: 0L
+                val count = storage.value?.count ?: 0
 
-                if (value == 0L) {
-                    return@map "No offline data"
+                if (byteValue == 0L || count == 0) {
+                    return@map stringResource(R.string.no_offline_data)
                 }
 
                 // could handle pluralisation of "bytes" but it's impossible to be a single byte
 
-                if (value > 1024) {
-                    value /= 1024
-                    unit = "KB"
+                if (byteValue > 1024) {
+                    byteValue /= 1024
+                    byteUnit = R.string.kb
                 }
-                if (value > 1024) {
-                    value /= 1024
-                    unit = "MB"
+                if (byteValue > 1024) {
+                    byteValue /= 1024
+                    byteUnit = R.string.mb
                 }
-                if (value > 1024) {
-                    value /= 1024
-                    unit = "GB"
-                }
-
-                val count = storage.value?.count ?: 0
-                val plural = if (count == 1) {
-                    ""
-                } else {
-                    "s"
+                if (byteValue > 1024) {
+                    byteValue /= 1024
+                    byteUnit = R.string.gb
                 }
 
-                "$value$unit used ($count article$plural)"
+                // e.g. 2MB used (50 articles)
+                val byteString = stringResource(byteUnit, byteValue)
+                val countString = pluralStringResource(R.plurals.articles, count, count)
+                stringResource(R.string.offline_storage_value, byteString, countString)
             },
             button = { wiki ->
                 ButtonWikiStorageDelete(

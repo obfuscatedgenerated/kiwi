@@ -6,6 +6,8 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import codes.ollieg.kiwi.R
 import codes.ollieg.kiwi.data.room.Wiki
 
 @Composable
@@ -21,7 +23,7 @@ fun ButtonWikiStorageDelete(
     ) {
         Icon(
             imageVector = Icons.Outlined.Delete,
-            contentDescription = "Clear offline storage used by ${wiki.name}",
+            contentDescription = stringResource(R.string.clear_offline_storage_used_by, wiki.name),
         )
     }
 }

@@ -17,7 +17,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import codes.ollieg.kiwi.R
 import codes.ollieg.kiwi.data.room.WikisViewModel
 
 @Composable
@@ -57,7 +59,7 @@ fun ScreenManageWikis(
                 )
 
                 Text(
-                    text = "Add wiki",
+                    text = stringResource(R.string.add_wiki),
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }

@@ -14,7 +14,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import codes.ollieg.kiwi.R
 import codes.ollieg.kiwi.data.room.Article
 
 @Composable
@@ -52,7 +54,7 @@ fun ArticleList(
                 },
                 supportingContent = {
                     Text(
-                        text = article.parsedSnippet ?: "No preview available.",
+                        text = article.parsedSnippet ?: stringResource(R.string.no_preview_available),
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

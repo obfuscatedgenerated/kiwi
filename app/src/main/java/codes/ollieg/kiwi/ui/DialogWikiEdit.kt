@@ -38,9 +38,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import codes.ollieg.kiwi.R
 import codes.ollieg.kiwi.data.room.Wiki
 import codes.ollieg.kiwi.data.room.WikisViewModel
 
@@ -130,7 +132,7 @@ fun DialogWikiEdit(
                         IconButton(onClick = onDismissRequest) {
                             Icon(
                                 Icons.Outlined.Close,
-                                contentDescription = "Close modal",
+                                contentDescription = stringResource(R.string.close_modal),
                             )
                         }
 
@@ -201,7 +203,7 @@ fun DialogWikiEdit(
                     Spacer(modifier = Modifier.padding(horizontal = 8.dp))
 
                     Text(
-                        text = "Your config looks good!",
+                        text = stringResource(R.string.your_config_looks_good),
                         style = MaterialTheme.typography.bodyLarge,
                     )
                 }
@@ -220,11 +222,11 @@ fun DialogWikiEdit(
                     onValueChange = { value ->
                         wikiApiUrl = value
                     },
-                    label = { Text("API URL") },
-                    placeholder = { Text("e.g. https://en.wikipedia.org/w/api.php") },
+                    label = { Text(stringResource(R.string.api_url)) },
+                    placeholder = { Text(stringResource(R.string.placeholder_api_url)) },
                     supportingText = {
                         Text(
-                            text = "Usually found at https://example.com/w/api.php",
+                            text = stringResource(R.string.subtext_api_url),
                             style = MaterialTheme.typography.bodySmall
                         )
                     },
@@ -245,8 +247,8 @@ fun DialogWikiEdit(
                     onValueChange = { value ->
                         wikiName = value
                     },
-                    label = { Text("Wiki name") },
-                    placeholder = { Text("e.g. Wikipedia") },
+                    label = { Text(stringResource(R.string.wiki_name)) },
+                    placeholder = { Text(stringResource(R.string.placeholder_wiki_name)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
@@ -261,7 +263,7 @@ fun DialogWikiEdit(
                 // authentication form
 
                 Text(
-                    text = "Authentication (optional)",
+                    text = stringResource(R.string.auth_section),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
                 )
@@ -271,7 +273,7 @@ fun DialogWikiEdit(
                     onValueChange = { value ->
                         wikiAuthUsername = value
                     },
-                    label = { Text("Username") },
+                    label = { Text(stringResource(R.string.username)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
@@ -286,7 +288,7 @@ fun DialogWikiEdit(
                     onValueChange = { value ->
                         wikiAuthPassword = value
                     },
-                    label = { Text("Password") },
+                    label = { Text(stringResource(R.string.password)) },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     modifier = Modifier
@@ -322,7 +324,7 @@ fun DialogWikiEdit(
 
                             ) {
                             Text(
-                                text = "Delete wiki",
+                                text = stringResource(R.string.delete_wiki),
                                 color = MaterialTheme.colorScheme.error
                             )
                         }

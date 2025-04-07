@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.core.net.toUri
@@ -32,6 +33,7 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import codes.ollieg.kiwi.AppScreens
+import codes.ollieg.kiwi.R
 import codes.ollieg.kiwi.data.room.ArticlesViewModel
 import codes.ollieg.kiwi.data.room.WikisViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -63,7 +65,7 @@ private fun ArticleSpecificTopBar(
         ),
         title = {
             Text(
-                text = article.value?.title ?: "Loading...",
+                text = article.value?.title ?: stringResource(R.string.loading),
                 textAlign = TextAlign.Left,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -75,7 +77,7 @@ private fun ArticleSpecificTopBar(
                 // pop the back stack to go back to the previous screen
                 navController.popBackStack()
             }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
             }
         },
         actions = {
@@ -100,9 +102,9 @@ private fun ArticleSpecificTopBar(
                     // show toast depending on the new state
                     val context = wikisViewModel.getApplication() as Context
                     val toastText = if (newArticle.starred) {
-                        "Starred ${newArticle.title}!"
+                        context.getString(R.string.starred_article, newArticle.title)
                     } else {
-                        "Removed ${newArticle.title} from starred list"
+                        context.getString(R.string.unstarred_article, newArticle.title)
                     }
 
                     Toast.makeText(
@@ -121,9 +123,16 @@ private fun ArticleSpecificTopBar(
                     Icons.Outlined.StarBorder
                 }
 
+                // also update the button description for accessibility
+                val starDescription = if (article.value?.starred == true) {
+                    stringResource(R.string.unstar_article)
+                } else {
+                    stringResource(R.string.star_article)
+                }
+
                 Icon(
                     starIcon,
-                    contentDescription = "Add article to starred list",
+                    contentDescription = starDescription,
                 )
             }
 
@@ -137,7 +146,7 @@ private fun ArticleSpecificTopBar(
                     if (url == null) {
                         Toast.makeText(
                             context,
-                            "Sorry, couldn't find a URL for this article.\nPlease refresh or try again later.",
+                            context.getString(R.string.missing_url),
                             Toast.LENGTH_LONG
                         ).show()
                         return@IconButton
@@ -156,7 +165,7 @@ private fun ArticleSpecificTopBar(
             ) {
                 Icon(
                     Icons.Outlined.Language,
-                    contentDescription = "Open article in browser",
+                    contentDescription = stringResource(R.string.open_in_browser),
                 )
             }
 
@@ -167,7 +176,7 @@ private fun ArticleSpecificTopBar(
 
                     // get wiki name (fallback will just say "check out this cool article")
                     val wiki = wikisViewModel.getById(wikiId)
-                    val wikiName = wiki?.name ?: "cool"
+                    val wikiName = wiki?.name ?: context.getString(R.string.share_wiki_name_fallback)
 
                     // get article title and url for a cleaner template string
                     val articleTitle = article.value?.title!!
@@ -176,7 +185,7 @@ private fun ArticleSpecificTopBar(
                     if (articleUrl == null) {
                         Toast.makeText(
                             context,
-                            "Sorry, couldn't find a URL for this article.\nPlease refresh or try again later.",
+                            context.getString(R.string.missing_url),
                             Toast.LENGTH_LONG
                         ).show()
                         return@IconButton
@@ -185,16 +194,12 @@ private fun ArticleSpecificTopBar(
                     // sharesheet intent
                     val intent = Intent(Intent.ACTION_SEND)
 
-                    // content as a multiline string for readability
+                    // share content
                     intent.type = "text/plain"
-                    intent.putExtra(Intent.EXTRA_TEXT, """
-                        Check out this $wikiName article on $articleTitle:
-                        $articleUrl
-                        
-                        🥝 Shared from KiWi
-                    """.trimIndent())
+                    intent.putExtra(Intent.EXTRA_TEXT, context.getString(R.string.share_text, wikiName, articleTitle, articleUrl))
 
-                    val share = Intent.createChooser(intent, "Share article link")
+                    val share = Intent.createChooser(intent,
+                        context.getString(R.string.share_sheet_title))
                     share.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
                     context.startActivity(share)
@@ -202,7 +207,7 @@ private fun ArticleSpecificTopBar(
             ) {
                 Icon(
                     Icons.Outlined.Share,
-                    contentDescription = "Share article",
+                    contentDescription = stringResource(R.string.share_article),
                 )
             }
         }

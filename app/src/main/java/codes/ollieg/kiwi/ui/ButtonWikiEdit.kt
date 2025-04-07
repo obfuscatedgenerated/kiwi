@@ -6,6 +6,8 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import codes.ollieg.kiwi.R
 import codes.ollieg.kiwi.data.room.Wiki
 
 @Composable
@@ -21,7 +23,7 @@ fun ButtonWikiEdit(
     ) {
         Icon(
             imageVector = Icons.Outlined.Edit,
-            contentDescription = "Edit ${wiki.name}",
+            contentDescription = stringResource(R.string.edit_thing, wiki.name),
         )
     }
 }

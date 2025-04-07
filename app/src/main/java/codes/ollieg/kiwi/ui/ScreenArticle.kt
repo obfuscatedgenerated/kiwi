@@ -9,9 +9,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import codes.ollieg.kiwi.R
 import codes.ollieg.kiwi.data.room.ArticlesViewModel
 import codes.ollieg.kiwi.data.room.WikisViewModel
 
@@ -40,7 +42,7 @@ fun ScreenArticle(
 
         if (parsed == null) {
             return Text(
-                text = "Couldn't load article",
+                text = stringResource(R.string.couldnt_load_article),
                 modifier = Modifier.padding(16.dp)
             )
         }

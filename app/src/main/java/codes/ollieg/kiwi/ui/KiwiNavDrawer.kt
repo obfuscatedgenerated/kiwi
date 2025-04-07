@@ -7,9 +7,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
@@ -23,6 +23,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -46,7 +47,7 @@ fun KiwiNavDrawerWikiItem(
         icon = {
             Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null)
         },
-        label = { Text(text = wiki?.name ?: "Loading...") },
+        label = { Text(text = wiki?.name ?: stringResource(R.string.loading)) },
         selected = selected,
         onClick = onClick,
         modifier = modifier,
@@ -71,13 +72,13 @@ fun KiwiNavDrawer(
     ModalNavigationDrawer(
         drawerContent = {
             ModalDrawerSheet {
-                Text("KiWi", modifier = Modifier.padding(16.dp))
+                Text(stringResource(R.string.app_name), modifier = Modifier.padding(16.dp))
                 Spacer(modifier = Modifier.padding(4.dp))
 
                 val subtitleModifier =
                     Modifier.padding(start = 24.dp, end = 10.dp, top = 10.dp, bottom = 10.dp)
 
-                Text(text = "Wikis", modifier = subtitleModifier)
+                Text(text = stringResource(R.string.nav_section_wikis), modifier = subtitleModifier)
 
                 val itemModifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
 
@@ -105,13 +106,13 @@ fun KiwiNavDrawer(
                 }
 
                 // divider adjusted to be more transparent and take up less width
-                Divider(
+                HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                     thickness = 1.dp,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
                 )
 
-                Text(text = "Settings", modifier = subtitleModifier)
+                Text(text = stringResource(R.string.nav_section_settings), modifier = subtitleModifier)
 
                 // TODO: use shared base component for these like done for wikis
 
@@ -120,7 +121,7 @@ fun KiwiNavDrawer(
                     icon = {
                         Icon(Icons.AutoMirrored.Filled.LibraryBooks, contentDescription = null)
                     },
-                    label = { Text(text = "Manage wikis") },
+                    label = { Text(text = stringResource(R.string.nav_manage_wikis)) },
                     selected = (navRoute == AppScreens.ManageWikis.name),
                     onClick = {
                         // navigate to the manage wikis screen
@@ -139,7 +140,7 @@ fun KiwiNavDrawer(
                             contentDescription = null
                         )
                     },
-                    label = { Text(text = "Manage offline storage") },
+                    label = { Text(text = stringResource(R.string.nav_manage_storage)) },
                     selected = (navRoute == AppScreens.ManageStorage.name),
                     onClick = {
                         // navigate to the manage storage screen
@@ -153,7 +154,7 @@ fun KiwiNavDrawer(
                 NavigationDrawerItem(
                     modifier = itemModifier,
                     icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    label = { Text(text = "Other settings") },
+                    label = { Text(text = stringResource(R.string.nav_other_settings)) },
                     selected = (navRoute == AppScreens.OtherSettings.name),
                     onClick = {
                         // navigate to the other settings screen

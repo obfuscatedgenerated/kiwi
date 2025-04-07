@@ -20,9 +20,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import codes.ollieg.kiwi.AppScreens
+import codes.ollieg.kiwi.R
 import codes.ollieg.kiwi.data.isLoggedInToMediawiki
 import codes.ollieg.kiwi.data.logInToMediawiki
 import codes.ollieg.kiwi.data.room.ArticlesViewModel
@@ -98,7 +100,7 @@ fun ScreenWikiHome(
     // if authentication fails, show error message
     if (authenticated == null) {
         return Text(
-            text = "Error logging in to ${wiki.value!!.name}. Please check your credentials.",
+            text = stringResource(R.string.error_logging_in_to_wiki, wiki.value!!.name),
             modifier = Modifier.padding(16.dp)
         )
     }
@@ -120,7 +122,7 @@ fun ScreenWikiHome(
         Spacer(modifier = Modifier.padding(8.dp))
 
         Text(
-            text = "Starred articles",
+            text = stringResource(R.string.starred_articles),
             style = MaterialTheme.typography.titleLarge,
         )
 
@@ -128,7 +130,7 @@ fun ScreenWikiHome(
             CenteredLoader()
         } else if (starredArticles.value!!.isEmpty()) {
             Text(
-                text = "No starred articles... yet!",
+                text = stringResource(R.string.no_starred_articles),
                 style = MaterialTheme.typography.bodyMedium,
             )
         } else {

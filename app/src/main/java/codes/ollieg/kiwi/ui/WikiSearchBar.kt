@@ -1,22 +1,17 @@
 package codes.ollieg.kiwi.ui
 
 import android.util.Log
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
@@ -28,15 +23,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import codes.ollieg.kiwi.R
 import codes.ollieg.kiwi.data.fromApiBase
 import codes.ollieg.kiwi.data.fetch
 import codes.ollieg.kiwi.data.room.Article
@@ -167,7 +162,7 @@ fun WikiSearchBar(
             searchBarState = searchBarState,
             textFieldState = textFieldState,
             onSearch = { /* do nothing, the search results will be live when typing */ },
-            placeholder = { Text("Search ${wiki.name}") },
+            placeholder = { Text(stringResource(R.string.search_wiki, wiki.name)) },
             leadingIcon = {
                 if (searchBarState.currentValue == SearchBarValue.Expanded) {
                     // use back button when expanded
@@ -179,7 +174,7 @@ fun WikiSearchBar(
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Close search"
+                            contentDescription = stringResource(R.string.search_close)
                         )
                     }
                 } else {
@@ -205,7 +200,7 @@ fun WikiSearchBar(
         // show something if debounced input is empty
         if (debouncedInput.value.isEmpty()) {
             return@ExpandedFullScreenSearchBar Text(
-                text = "Type something to search...",
+                text = stringResource(R.string.search_empty_prompt),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(16.dp),
             )
@@ -219,7 +214,7 @@ fun WikiSearchBar(
         // empty state
         if (searchResults.value.isEmpty()) {
             return@ExpandedFullScreenSearchBar Text(
-                text = "No results found.",
+                text = stringResource(R.string.search_no_results),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(16.dp),
             )

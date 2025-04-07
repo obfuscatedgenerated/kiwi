@@ -55,10 +55,9 @@ class ConnectionChangeReceiver : BroadcastReceiver() {
         lastOnlineValue = isOnline
 
         if (!isOnline) {
-            Toast.makeText(context, "Your device just went offline.\n" +
-                    "Only offline articles are available.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.device_offline), Toast.LENGTH_LONG).show()
         } else {
-            Toast.makeText(context, "Back online!", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.back_online), Toast.LENGTH_LONG).show()
         }
     }
 }
