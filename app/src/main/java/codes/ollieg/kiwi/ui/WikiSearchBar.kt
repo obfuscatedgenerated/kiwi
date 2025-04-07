@@ -225,53 +225,13 @@ fun WikiSearchBar(
             )
         }
 
-        LazyColumn(
-        ) {
-            items(searchResults.value.size) { index ->
-                val article = searchResults.value[index]
+        // show article list and pass through the click handler
+        ArticleList(
+            articles = searchResults.value,
+            onResultClick = onResultClick,
+        )
 
-                ListItem(
-                    colors = ListItemDefaults.colors(
-                        containerColor = Color.Transparent
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            Log.i("WikiSearchBar", "Clicked on article: ${article.title}")
-
-                            if (onResultClick != null) {
-                                onResultClick(article)
-                            } else {
-                                Log.i("WikiSearchBar", "No onResultClick provided")
-                            }
-                        },
-                    headlineContent = {
-                        Text(
-                            text = article.title,
-                            style = MaterialTheme.typography.titleMedium,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    },
-                    supportingContent = {
-                        Text(
-                            text = article.parsedSnippet ?: "No preview available.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    },
-                    trailingContent = {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowRight,
-                            contentDescription = null,
-                        )
-                    },
-                )
-            }
-
-            // TODO: load next page of results if they scroll past the 15th result
-        }
+        // TODO: load next page of results if they scroll past the 15th result
     }
 }
 
