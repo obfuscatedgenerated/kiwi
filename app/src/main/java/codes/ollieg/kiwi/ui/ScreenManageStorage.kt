@@ -62,6 +62,8 @@ fun ScreenManageStorage(
                     return@map "No offline data"
                 }
 
+                // could handle pluralisation of "bytes" but it's impossible to be a single byte
+
                 if (value > 1024) {
                     value /= 1024
                     unit = "KB"
@@ -75,7 +77,14 @@ fun ScreenManageStorage(
                     unit = "GB"
                 }
 
-                "$value$unit used (${storage.value?.count} articles)"
+                val count = storage.value?.count ?: 0
+                val plural = if (count == 1) {
+                    ""
+                } else {
+                    "s"
+                }
+
+                "$value$unit used ($count article$plural)"
             },
             button = { wiki ->
                 ButtonWikiStorageDelete(
