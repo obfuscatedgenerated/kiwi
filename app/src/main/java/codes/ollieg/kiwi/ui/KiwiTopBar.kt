@@ -79,10 +79,37 @@ private fun ArticleSpecificTopBar(
             }
         },
         actions = {
-            // TODO: make functional
-
+            // star button
             IconButton(
-                onClick = {}
+                onClick = {
+                    if (article.value == null) {
+                        return@IconButton
+                    }
+
+                    val articleValue = article.value!!
+
+                    val newArticle = articleValue.copy(
+                        // toggle the starred state of the article
+                        starred = !articleValue.starred
+                    )
+
+                    // update the article in the database
+                    articlesViewModel.updateInCache(newArticle)
+
+                    // show toast depending on the new state
+                    val context = wikisViewModel.getApplication() as Context
+                    val toastText = if (newArticle.starred) {
+                        "Starred ${newArticle.title}!"
+                    } else {
+                        "Removed ${newArticle.title} from starred list"
+                    }
+
+                    Toast.makeText(
+                        context,
+                        toastText,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             ) {
                 // use filled star icon for starred articles, outlined for non-starred
                 // n.b. it isn't just outlined/filled. starborder and star are different icons
@@ -99,6 +126,7 @@ private fun ArticleSpecificTopBar(
                 )
             }
 
+            // open article in browser button
             IconButton(
                 onClick = {
                     val context = wikisViewModel.getApplication() as Context
@@ -131,6 +159,7 @@ private fun ArticleSpecificTopBar(
                 )
             }
 
+            // share article button
             IconButton(
                 onClick = {
                     val context = wikisViewModel.getApplication() as Context
