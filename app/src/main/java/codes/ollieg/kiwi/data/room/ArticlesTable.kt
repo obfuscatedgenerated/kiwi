@@ -32,6 +32,7 @@ data class Article(
     var parsedSnippet: String? = null, // snippet of the article that doesn't contain html, null if not downloaded yet
     var parsedContent: String? = null, // content of the article that doesn't contain html, null if not downloaded yet
 
+    // TODO: consider making an images table and making this an fk so its easier to get image storage usage. could also prevent duplication of the p key is clever
     var thumbnail: ByteArray? = null, // thumbnail of the article, null if not downloaded yet
 
     var revisionId: Long? = null, // revision id of the article, null if not downloaded yet

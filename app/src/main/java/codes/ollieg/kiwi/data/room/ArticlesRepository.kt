@@ -2,6 +2,8 @@ package codes.ollieg.kiwi.data.room
 
 import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.map
 import codes.ollieg.kiwi.data.fetch
 import codes.ollieg.kiwi.data.fromApiBase
 import codes.ollieg.kiwi.data.setQueryParameter
@@ -198,6 +200,49 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
 
     suspend fun getStarredByWiki(wiki: Wiki): List<Article> {
         return articlesDao.getStarredByWikiId(wiki.id)
+    }
+
+    data class StorageUsageEstimate(val bytes: Long, val count: Int)
+
+    suspend fun estimateOfflineStorageUsageForWiki(wiki: Wiki): StorageUsageEstimate {
+        val articles = getAllCachedByWiki(wiki)
+        val bytes = articles.sumOf { article ->
+            5L + // 4 longs and a bool TODO: use int values to determine actual bytes used
+            article.title.length +
+            (article.parsedContent?.length ?: 0) +
+            (article.parsedSnippet?.length ?: 0) +
+            (article.pageUrl?.length ?: 0) +
+            (article.thumbnail?.size ?: 0)
+        }
+        return StorageUsageEstimate(bytes, articles.size)
+    }
+
+    fun estimateOfflineStorageUsageForWikiLive(wiki: Wiki): LiveData<StorageUsageEstimate> {
+        val result = MediatorLiveData<StorageUsageEstimate>()
+
+        val articles = getAllCachedByWikiLive(wiki)
+        val bytes = articles.map { articles ->
+            articles.sumOf { article ->
+                5L + // 4 longs and a bool TODO: use int values to determine actual bytes used
+                article.title.length +
+                (article.parsedContent?.length ?: 0) +
+                (article.parsedSnippet?.length ?: 0) +
+                (article.pageUrl?.length ?: 0) +
+                (article.thumbnail?.size ?: 0)
+            }
+        }
+
+        val count = articles.map { it.size }
+
+        result.addSource(bytes) { b ->
+            result.value = StorageUsageEstimate(b, count.value ?: 0)
+        }
+
+        result.addSource(count) { c ->
+            result.value = StorageUsageEstimate(bytes.value ?: 0, c)
+        }
+
+        return result
     }
 
     // TODO: once api implemented here, remove use of the api from other classes

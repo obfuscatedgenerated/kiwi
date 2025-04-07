@@ -14,6 +14,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import codes.ollieg.kiwi.data.room.ArticlesViewModel
 import codes.ollieg.kiwi.data.room.WikisViewModel
 
 @Composable
@@ -21,6 +22,7 @@ fun ScreenManageStorage(
 ) {
     val context = LocalContext.current.applicationContext as Application
     val wikisViewModel = WikisViewModel(context)
+    val articlesViewModel = ArticlesViewModel(context)
 
     val allWikis = wikisViewModel.allWikis.observeAsState()
 
@@ -45,7 +47,29 @@ fun ScreenManageStorage(
         WikiList(
             wikis = allWikis.value ?: emptyList(),
             subtexts = allWikis.value?.map { wiki ->
-                "Storage size goes here"
+                val storage = articlesViewModel.estimateOfflineStorageUsageForWikiLive(wiki).observeAsState()
+
+                if (storage.value?.bytes == null) {
+                    return@map "Estimating usage..."
+                }
+
+                // format bytes to the cleanest unit
+                var unit = " bytes"
+                var value = storage.value?.bytes ?: 0L
+                if (value > 1024) {
+                    value /= 1024
+                    unit = "KB"
+                }
+                if (value > 1024) {
+                    value /= 1024
+                    unit = "MB"
+                }
+                if (value > 1024) {
+                    value /= 1024
+                    unit = "GB"
+                }
+
+                "$value$unit used (${storage.value?.count} articles)"
             },
             button = { wiki ->
                 ButtonWikiStorageDelete(

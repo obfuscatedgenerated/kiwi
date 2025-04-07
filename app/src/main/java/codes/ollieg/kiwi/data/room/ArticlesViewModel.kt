@@ -91,4 +91,14 @@ class ArticlesViewModel (application: Application) : AndroidViewModel(applicatio
     fun getStarredByWikiLive(wiki: Wiki): LiveData<List<Article>> {
         return repo.getStarredByWikiLive(wiki)
     }
+
+    fun estimateOfflineStorageUsageForWiki(wiki: Wiki): ArticlesRepository.StorageUsageEstimate {
+        return runBlocking {
+            repo.estimateOfflineStorageUsageForWiki(wiki)
+        }
+    }
+
+    fun estimateOfflineStorageUsageForWikiLive(wiki: Wiki): LiveData<ArticlesRepository.StorageUsageEstimate> {
+        return repo.estimateOfflineStorageUsageForWikiLive(wiki)
+    }
 }
