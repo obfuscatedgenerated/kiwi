@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
         super.onResume()
 
         // register receiver to show toast when device connects to or loses connection to the internet
-        // TODO: use newer callback if approved
+        // TODO: use newer callback for this, but use a different receiver to get the marks (maybe just do a diff message if they set airplane mode)
         val connChangeReceiverFlags = ContextCompat.RECEIVER_NOT_EXPORTED
         val connChangeFilter = IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
         ContextCompat.registerReceiver(this, connChangeReceiver, connChangeFilter, connChangeReceiverFlags)

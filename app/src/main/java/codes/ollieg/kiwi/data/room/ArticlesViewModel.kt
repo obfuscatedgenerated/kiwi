@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class ArticlesViewModel (application: Application) : AndroidViewModel(application) {
-    private val repo: ArticlesRepository
+    val repo: ArticlesRepository
 
     init {
         val articlesDao = KiwiDatabase.getDatabase(application).articlesDao()
