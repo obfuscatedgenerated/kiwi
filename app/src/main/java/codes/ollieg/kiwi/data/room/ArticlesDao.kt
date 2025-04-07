@@ -54,4 +54,10 @@ interface ArticlesDao {
 
     @Query("SELECT * FROM Articles WHERE wikiId = :wikiId AND title LIKE '%' || :query || '%'")
     suspend fun searchByTitle(wikiId: Long, query: String): List<Article>
+
+    @Query("SELECT * FROM Articles WHERE wikiId = :wikiId AND starred = 1")
+    suspend fun getStarredByWikiId(wikiId: Long): List<Article>
+
+    @Query("SELECT * FROM Articles WHERE wikiId = :wikiId AND starred = 1")
+    fun getStarredByWikiIdLive(wikiId: Long): LiveData<List<Article>>
 }

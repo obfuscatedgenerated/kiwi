@@ -192,5 +192,13 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         return searchCache(wiki, query)
     }
 
+    fun getStarredByWikiLive(wiki: Wiki): LiveData<List<Article>> {
+        return articlesDao.getStarredByWikiIdLive(wiki.id)
+    }
+
+    suspend fun getStarredByWiki(wiki: Wiki): List<Article> {
+        return articlesDao.getStarredByWikiId(wiki.id)
+    }
+
     // TODO: once api implemented here, remove use of the api from other classes
 }

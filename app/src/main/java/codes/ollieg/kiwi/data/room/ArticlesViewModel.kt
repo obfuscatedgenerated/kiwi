@@ -87,4 +87,8 @@ class ArticlesViewModel (application: Application) : AndroidViewModel(applicatio
             repo.deleteAllByWikiFromCache(wiki)
         }
     }
+
+    fun getStarredByWikiLive(wiki: Wiki): LiveData<List<Article>> {
+        return repo.getStarredByWikiLive(wiki)
+    }
 }
