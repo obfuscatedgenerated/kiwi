@@ -7,11 +7,11 @@
     <string name="no_preview_available">No preview available.</string>
 
     <string name="edit_thing">Edit %1$s</string>
-    <string name="clear_offline_storage_used_by">Clear offline storage used by %1$s</string>
+    <string name="clear_offline_storage_used_by_wiki">Clear offline storage used by %1$s</string>
 
     <string name="close_modal">Close modal</string>
 
-    <string name="your_config_looks_good">Your config looks good!</string>
+    <string name="config_ok">Your config looks good!</string>
 
     <string name="api_url">API URL</string>
     <string name="placeholder_api_url">e.g. https://en.wikipedia.org/w/api.php</string>

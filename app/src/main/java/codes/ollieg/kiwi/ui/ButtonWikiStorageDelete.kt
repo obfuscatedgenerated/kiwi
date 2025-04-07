@@ -23,7 +23,7 @@ fun ButtonWikiStorageDelete(
     ) {
         Icon(
             imageVector = Icons.Outlined.Delete,
-            contentDescription = stringResource(R.string.clear_offline_storage_used_by, wiki.name),
+            contentDescription = stringResource(R.string.clear_offline_storage_used_by_wiki, wiki.name),
         )
     }
 }

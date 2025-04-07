@@ -203,7 +203,7 @@ fun DialogWikiEdit(
                     Spacer(modifier = Modifier.padding(horizontal = 8.dp))
 
                     Text(
-                        text = stringResource(R.string.your_config_looks_good),
+                        text = stringResource(R.string.config_ok),
                         style = MaterialTheme.typography.bodyLarge,
                     )
                 }
