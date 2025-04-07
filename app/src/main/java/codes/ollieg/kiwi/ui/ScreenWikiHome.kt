@@ -68,6 +68,7 @@ fun ScreenWikiHome(
                         "ScreenWikiHome",
                         "Already logged in to ${wiki.value!!.name}. No action needed."
                     )
+                    authenticated = true
                 } else {
                     Log.i("ScreenWikiHome", "Logging in to ${wiki.value!!.name}...")
 
