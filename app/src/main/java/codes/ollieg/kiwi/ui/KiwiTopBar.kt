@@ -92,6 +92,7 @@ private fun ArticleSpecificTopBar(
                         // toggle the starred state of the article
                         starred = !articleValue.starred
                     )
+                    // TODO: ensure snippet loaded (would help if snippet method was in its own function and was online dependent)
 
                     // update the article in the database
                     articlesViewModel.updateInCache(newArticle)
