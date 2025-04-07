@@ -2,16 +2,21 @@ package codes.ollieg.kiwi.data
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.cookies.cookies
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.header
 import io.ktor.client.request.request
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpMethod
+import io.ktor.http.Parameters
 import org.json.JSONObject
 import java.net.URL
 import java.net.URLEncoder
@@ -25,7 +30,16 @@ private val client = HttpClient(CIO) {
     // throw errors for non ok responses
     expectSuccess = true
 
-    install(Logging)
+    install(Logging) {
+        logger = object: Logger {
+            override fun log(message: String) {
+                Log.d("HttpClient", message)
+            }
+        }
+
+        level = LogLevel.BODY
+    }
+
     install(HttpCookies)
 }
 
@@ -41,7 +55,7 @@ fun checkOnline(context: Context): Boolean {
 // TODO: implement auth from wiki entity
 
 // simpler wrapper around the ktor client
-suspend fun fetch(url: String, headers: Map<String, String> = emptyMap(), httpMethod: HttpMethod = HttpMethod.Get, body: String? = null): String {
+suspend fun fetch(url: String, headers: Map<String, String> = emptyMap(), httpMethod: HttpMethod = HttpMethod.Get, body: Any? = null): String {
     val response = client.request(url) {
         method = httpMethod
 
@@ -57,7 +71,7 @@ suspend fun fetch(url: String, headers: Map<String, String> = emptyMap(), httpMe
     return response.body()
 }
 
-suspend fun fetch(url: URL, headers: Map<String, String> = emptyMap(), httpMethod: HttpMethod = HttpMethod.Get, body: String? = null): String {
+suspend fun fetch(url: URL, headers: Map<String, String> = emptyMap(), httpMethod: HttpMethod = HttpMethod.Get, body: Any? = null): String {
     return fetch(url.toString(), headers, httpMethod, body)
 }
 
@@ -74,12 +88,16 @@ suspend fun logInToMediawiki(apiUrl: String, username: String, password: String)
     val token = data.getJSONObject("query").getJSONObject("tokens").getString("logintoken")
 
     // log in with the token
-    val loginBody = JSONObject()
-    loginBody.put("lgname", username)
-    loginBody.put("lgpassword", password)
-    loginBody.put("lgtoken", token)
+    val loginBody = FormDataContent(Parameters.build {
+        append("lgname", username)
+        append("lgpassword", password)
+        append("lgtoken", token)
+    })
+
+    Log.i("ApiUtil", "loginBody: $loginBody")
+
     val loginUrl = fromApiBase(apiUrl, "?action=login&format=json")
-    val loginResponse = fetch(loginUrl, withDefaultHeaders(), HttpMethod.Post, loginBody.toString())
+    val loginResponse = fetch(loginUrl, withDefaultHeaders(), HttpMethod.Post, loginBody)
 
     // parse the json
     val loginData = JSONObject(loginResponse)
