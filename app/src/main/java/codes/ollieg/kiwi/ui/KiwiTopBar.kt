@@ -52,6 +52,7 @@ private fun ArticleSpecificTopBar(
     val articleId = navArgs?.getLong("article_id")!!
     val wikiId = navArgs?.getLong("wiki_id")!!
 
+    // get article data
     // should update automatically from cache, so no need to coordinate with the data fetching mechanism, it'll just show when it's ready
     val article = articlesViewModel.repo.getByIdCachedLive(wikisViewModel.getById(wikiId)!!, articleId).observeAsState()
 
@@ -131,7 +132,43 @@ private fun ArticleSpecificTopBar(
             }
 
             IconButton(
-                onClick = {}
+                onClick = {
+                    val context = wikisViewModel.getApplication() as Context
+
+                    // get wiki name (fallback will just say "check out this cool article")
+                    val wiki = wikisViewModel.getById(wikiId)
+                    val wikiName = wiki?.name ?: "cool"
+
+                    // get article title and url for a cleaner template string
+                    val articleTitle = article.value?.title!!
+                    val articleUrl = article.value?.pageUrl
+
+                    if (articleUrl == null) {
+                        Toast.makeText(
+                            context,
+                            "Sorry, couldn't find a URL for this article.\nPlease refresh or try again later.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        return@IconButton
+                    }
+
+                    // sharesheet intent
+                    val intent = Intent(Intent.ACTION_SEND)
+
+                    // content as a multiline string for readability
+                    intent.type = "text/plain"
+                    intent.putExtra(Intent.EXTRA_TEXT, """
+                        Check out this $wikiName article on $articleTitle:
+                        $articleUrl
+                        
+                        🥝 Shared from KiWi
+                    """.trimIndent())
+
+                    val share = Intent.createChooser(intent, "Share article link")
+                    share.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+                    context.startActivity(share)
+                }
             ) {
                 Icon(
                     Icons.Outlined.Share,
