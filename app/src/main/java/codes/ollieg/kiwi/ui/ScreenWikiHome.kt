@@ -51,15 +51,14 @@ fun ScreenWikiHome(
         return
     }
 
-    // log into the api if required
-    val authRequired = wiki.value!!.authUsername != "" && wiki.value!!.authPassword != ""
     var authenticated by remember { mutableStateOf<Boolean?>(false) }
 
     // if wiki changes, check authentication again
     LaunchedEffect(wiki.value) {
         authenticated = false
 
-        if (authRequired) {
+        // log into the api if required
+        if (wiki.value!!.authUsername != "" && wiki.value!!.authPassword != "") {
             Log.i("ScreenWikiHome", "Auth details found for ${wiki.value!!.name}, logging in...")
 
             CoroutineScope(Dispatchers.IO).launch {
