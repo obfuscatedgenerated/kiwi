@@ -47,6 +47,7 @@ fun ScreenManageStorage(
         WikiList(
             wikis = allWikis.value ?: emptyList(),
             subtexts = allWikis.value?.map { wiki ->
+                // estimate storage usage for each wiki
                 val storage = articlesViewModel.estimateOfflineStorageUsageForWikiLive(wiki).observeAsState()
 
                 if (storage.value?.bytes == null) {
@@ -56,6 +57,11 @@ fun ScreenManageStorage(
                 // format bytes to the cleanest unit
                 var unit = " bytes"
                 var value = storage.value?.bytes ?: 0L
+
+                if (value == 0L) {
+                    return@map "No offline data"
+                }
+
                 if (value > 1024) {
                     value /= 1024
                     unit = "KB"
