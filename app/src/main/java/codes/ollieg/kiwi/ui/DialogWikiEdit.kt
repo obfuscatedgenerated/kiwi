@@ -34,11 +34,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -106,6 +110,9 @@ fun DialogWikiEdit(
 
     // now using bottom sheet rather than dialog so it can be swiped down
 
+    // focus traversal order for the form fields. semantics is only for talkback
+    val (first, second, third, fourth, fifth, sixth) = remember { FocusRequester.createRefs() }
+
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
@@ -171,7 +178,10 @@ fun DialogWikiEdit(
                                     /* TODO: show error message */
                                 }
                             },
-                            colors = ButtonDefaults.textButtonColors()
+                            colors = ButtonDefaults.textButtonColors(),
+                            modifier = Modifier.semantics {
+                                traversalIndex = 4f
+                            }.focusRequester(fifth)
                         ) {
                             Text("Save")
                         }
@@ -230,6 +240,7 @@ fun DialogWikiEdit(
                             style = MaterialTheme.typography.bodySmall
                         )
                     },
+                    singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -238,10 +249,12 @@ fun DialogWikiEdit(
                             bottom = formFieldBottomPadding,
                             start = formFieldHorizontalPadding,
                             end = formFieldHorizontalPadding
-                        ),
+                        ).semantics {
+                            traversalIndex = 0f
+                        }.focusRequester(first)
                 )
 
-                // note: this will get set automatically when trying the api if empty
+                // TODO: this will get set automatically when trying the api if empty
                 OutlinedTextField(
                     value = wikiName,
                     onValueChange = { value ->
@@ -249,13 +262,16 @@ fun DialogWikiEdit(
                     },
                     label = { Text(stringResource(R.string.wiki_name)) },
                     placeholder = { Text(stringResource(R.string.placeholder_wiki_name)) },
+                    singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
                             bottom = formFieldBottomPadding,
                             start = formFieldHorizontalPadding,
                             end = formFieldHorizontalPadding
-                        ),
+                        ).semantics {
+                            traversalIndex = 1f
+                        }.focusRequester(second)
                 )
 
                 Spacer(modifier = Modifier.padding(24.dp))
@@ -274,13 +290,16 @@ fun DialogWikiEdit(
                         wikiAuthUsername = value
                     },
                     label = { Text(stringResource(R.string.username)) },
+                    singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
                             bottom = formFieldBottomPadding,
                             start = formFieldHorizontalPadding,
                             end = formFieldHorizontalPadding
-                        ),
+                        ).semantics {
+                            traversalIndex = 2f
+                        }.focusRequester(third)
                 )
 
                 OutlinedTextField(
@@ -289,6 +308,7 @@ fun DialogWikiEdit(
                         wikiAuthPassword = value
                     },
                     label = { Text(stringResource(R.string.password)) },
+                    singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     modifier = Modifier
@@ -297,7 +317,9 @@ fun DialogWikiEdit(
                             bottom = formFieldBottomPadding,
                             start = formFieldHorizontalPadding,
                             end = formFieldHorizontalPadding
-                        ),
+                        ).semantics {
+                            traversalIndex = 3f
+                        }.focusRequester(fourth)
                 )
 
                 Spacer(modifier = Modifier.padding(24.dp))
@@ -308,7 +330,9 @@ fun DialogWikiEdit(
                     Row(
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().semantics {
+                            traversalIndex = 5f
+                        }.focusRequester(sixth)
                     ) {
                         Button(
                             onClick = {
