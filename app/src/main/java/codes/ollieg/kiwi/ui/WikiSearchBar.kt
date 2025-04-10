@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -41,15 +42,14 @@ import codes.ollieg.kiwi.data.setQueryParameter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
-const val DEBOUNCE_TIME = 1500L
+const val DEBOUNCE_TIME = 1000L
 const val N_RESULTS = 15
-
-// TODO: make search respond quicker
 
 class WikiSearchViewModel(private val wiki: Wiki) : ViewModel() {
     val liveInput = MutableStateFlow("")
@@ -63,6 +63,7 @@ class WikiSearchViewModel(private val wiki: Wiki) : ViewModel() {
 
     private fun updateSearch(query: String) {
         if (query.isEmpty()) {
+            Log.i("WikiSearchViewModel", "Empty query, clearing search results")
             searchResults.value = emptyList()
             return
         }
@@ -114,6 +115,7 @@ class WikiSearchViewModel(private val wiki: Wiki) : ViewModel() {
 
                 // update the search results state
                 if (articles.isEmpty()) {
+                    Log.i("WikiSearchViewModel", "No results found")
                     searchResults.value = emptyList()
                 } else {
                     searchResults.value = articles
@@ -130,7 +132,8 @@ class WikiSearchViewModel(private val wiki: Wiki) : ViewModel() {
     init {
         // update search results when debounced input changes
         viewModelScope.launch {
-            debouncedInput.collect { query ->
+            debouncedInput.collectLatest { query ->
+                Log.i("WikiSearchViewModel", "debouncedInput: $query")
                 updateSearch(query)
             }
         }
@@ -153,8 +156,11 @@ fun WikiSearchBar(
     val debouncedInput = viewModel.debouncedInput.collectAsState("")
 
     // side effect to update view model when text field changes
-    LaunchedEffect(textFieldState.text) {
-        viewModel.liveInput.value = textFieldState.text.toString()
+    LaunchedEffect(textFieldState) {
+        snapshotFlow { textFieldState.text }
+            .collectLatest { text ->
+                viewModel.liveInput.value = text.toString()
+            }
     }
 
     val inputField = @Composable {
