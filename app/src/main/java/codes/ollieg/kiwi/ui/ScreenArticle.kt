@@ -53,8 +53,11 @@ fun ScreenArticle(
         Scaffold (
             floatingActionButton = {
                 // if the user is already near the top, don't show the button
-                val scrollOffset by remember { derivedStateOf { lazyListState.firstVisibleItemScrollOffset } }
-                val visible = scrollOffset >= 1000
+                val visible by remember {
+                    derivedStateOf {
+                        lazyListState.firstVisibleItemIndex != 0 || lazyListState.firstVisibleItemScrollOffset >= 500
+                    }
+                }
 
                 AnimatedVisibility(
                     visible,
