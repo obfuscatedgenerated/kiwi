@@ -8,8 +8,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.VerticalAlignTop
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -74,9 +75,10 @@ fun ScreenArticle(
                             }
                         },
                         modifier = Modifier.padding(16.dp),
+                        shape = CircleShape
                     ) {
                         Icon(
-                            Icons.Default.VerticalAlignTop,
+                            Icons.Default.KeyboardArrowUp,
                             contentDescription = "Scroll to top",
                         )
                     }
