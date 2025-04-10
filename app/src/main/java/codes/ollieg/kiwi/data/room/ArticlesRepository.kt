@@ -181,6 +181,10 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         return articlesDao.deleteAllByWikiId(wiki.id)
     }
 
+    suspend fun deleteAllFromCache(): Int {
+        return articlesDao.deleteAll()
+    }
+
     fun searchCacheLive(wiki: Wiki, query: String): LiveData<List<Article>> {
         return articlesDao.searchByTitleLive(wiki.id, query)
     }

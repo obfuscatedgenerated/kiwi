@@ -88,6 +88,12 @@ class ArticlesViewModel (application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    fun deleteAllFromCache(): Int {
+        return runBlocking {
+            repo.deleteAllFromCache()
+        }
+    }
+
     fun getStarredByWikiLive(wiki: Wiki): LiveData<List<Article>> {
         return repo.getStarredByWikiLive(wiki)
     }

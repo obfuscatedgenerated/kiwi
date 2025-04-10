@@ -31,6 +31,9 @@ interface ArticlesDao {
     @Query("DELETE FROM Articles WHERE wikiId = :wikiId")
     suspend fun deleteAllByWikiId(wikiId: Long): Int
 
+    @Query("DELETE FROM Articles")
+    suspend fun deleteAll(): Int
+
     @Query("SELECT * FROM Articles")
     fun getAllLive(): LiveData<List<Article>>
 

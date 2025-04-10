@@ -32,7 +32,13 @@ fun ScreenManageStorage(
     Scaffold (
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = { Log.i("ScreenManageStorage", "Delete button clicked") },
+                onClick = {
+                    Log.i("ScreenManageStorage", "Clear all button clicked")
+                    // TODO: confirm delete
+                    // TODO: any way to preserve starred articles?
+                    articlesViewModel.deleteAllFromCache()
+                    // TODO: check success
+                },
                 modifier = Modifier.padding(16.dp),
             ) {
                 Icon(
@@ -89,7 +95,13 @@ fun ScreenManageStorage(
             button = { wiki ->
                 ButtonWikiStorageDelete(
                     wiki = wiki,
-                    onClick = {/* TODO */}
+                    onClick = {
+                        Log.i("ScreenManageStorage", "Delete button clicked for ${wiki.name}")
+                        // TODO: confirm delete
+                        // TODO: any way to preserve starred articles?
+                        articlesViewModel.deleteAllByWikiFromCache(wiki)
+                        // TODO: check success
+                    }
                 )
             },
             modifier = Modifier.padding(padding)
