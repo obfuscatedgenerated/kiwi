@@ -157,6 +157,7 @@ fun WikiSearchBar(
 
     // side effect to update view model when text field changes
     LaunchedEffect(textFieldState) {
+        // snapshot flow ensures that the text field state is updated, not just recomposition
         snapshotFlow { textFieldState.text }
             .collectLatest { text ->
                 viewModel.liveInput.value = text.toString()
