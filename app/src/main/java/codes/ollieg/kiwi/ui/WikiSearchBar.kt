@@ -48,7 +48,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
-const val DEBOUNCE_TIME = 1000L
+const val DEBOUNCE_TIME = 500L
 const val N_RESULTS = 15
 
 class WikiSearchViewModel(private val wiki: Wiki) : ViewModel() {
