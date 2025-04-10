@@ -58,8 +58,8 @@ fun ScreenArticle(
 
                 AnimatedVisibility(
                     visible,
-                    enter = fadeIn(tween(500)),
-                    exit = fadeOut(tween(500)),
+                    enter = fadeIn(tween(750)),
+                    exit = fadeOut(tween(750)),
                 ) {
                     FloatingActionButton(
                         onClick = {
