@@ -3,6 +3,8 @@
 
     <string name="device_offline">Your device just went offline.\nOnly offline articles are available.</string>
     <string name="back_online">Back online!</string>
+    <string name="airplane_mode_on">Enjoy your flight!\nOnly offline articles are available.</string>
+    <string name="airplane_mode_off">Welcome back!</string>
 
     <string name="no_preview_available">No preview available.</string>
 
