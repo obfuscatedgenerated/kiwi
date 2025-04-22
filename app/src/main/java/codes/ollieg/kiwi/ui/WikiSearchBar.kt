@@ -1,5 +1,6 @@
 package codes.ollieg.kiwi.ui
 
+import android.app.Application
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -20,112 +21,67 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import codes.ollieg.kiwi.R
-import codes.ollieg.kiwi.data.fromApiBase
-import codes.ollieg.kiwi.data.fetch
 import codes.ollieg.kiwi.data.room.Article
-import codes.ollieg.kiwi.data.withDefaultHeaders
+import codes.ollieg.kiwi.data.room.ArticlesViewModel
 import codes.ollieg.kiwi.data.room.Wiki
-import codes.ollieg.kiwi.data.setQueryParameter
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 
 const val DEBOUNCE_TIME = 500L
 const val N_RESULTS = 15
 
-class WikiSearchViewModel(private val wiki: Wiki) : ViewModel() {
+class WikiSearchViewModel(private val wiki: Wiki, private val articlesViewModel: ArticlesViewModel) : ViewModel() {
     val liveInput = MutableStateFlow("")
 
     // don't want to spam the api too much, so debounce the input
     @OptIn(FlowPreview::class)
     val debouncedInput = liveInput.debounce(DEBOUNCE_TIME).distinctUntilChanged()
 
-    val searchResults = MutableStateFlow<List<Article>>(emptyList())
-    var runningSearch = MutableStateFlow(false)
+    private val _searchResults = MutableStateFlow<List<Article>>(emptyList())
+    private var _runningSearch = MutableStateFlow(false)
 
-    private fun updateSearch(query: String) {
+    // public read only stateflows
+    val searchResults = _searchResults.asStateFlow()
+    val runningSearch = _runningSearch.asStateFlow()
+
+    private suspend fun updateSearch(query: String) {
         if (query.isEmpty()) {
             Log.i("WikiSearchViewModel", "Empty query, clearing search results")
-            searchResults.value = emptyList()
+            _searchResults.value = emptyList()
             return
         }
 
-        runningSearch.value = true
+        _runningSearch.value = true
 
-        // build the search request url safely
-        var searchUrl = fromApiBase(wiki.apiUrl, "?action=query&list=search&utf8=&format=json")
-        searchUrl = setQueryParameter(searchUrl, "srsearch", query)
-        searchUrl = setQueryParameter(searchUrl, "srlimit", N_RESULTS.toString())
+        val context = articlesViewModel.getApplication<Application>().applicationContext
 
-        Log.i("WikiSearchViewModel", "searchUrl: $searchUrl")
-
-        // launch a coroutine to fetch the search results and update the state
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val searchRes = fetch(searchUrl, withDefaultHeaders())
-                Log.i("WikiSearchViewModel", "searchRes: $searchRes")
-
-                // parse the json
-                val data = JSONObject(searchRes)
-                val searchData = data.getJSONObject("query").getJSONArray("search")
-                val articles = mutableListOf<Article>()
-
-                // iterate over the search results and create article objects
-                for (i in 0 until searchData.length()) {
-                    val entry = searchData.getJSONObject(i)
-                    val pageId = entry.getLong("pageid")
-                    val title = entry.getString("title")
-
-                    var snippetHtml: String? = null
-                    try {
-                        snippetHtml = entry.getString("snippet")
-                    } catch (e: Exception) {
-                        Log.e("WikiSearchViewModel", "Error getting snippet (or null)", e)
-                    }
-
-                    var parsedSnippet = AnnotatedString.fromHtml(snippetHtml ?: "")
-
-                    val article = Article(
-                        wikiId = wiki.id,
-                        pageId = pageId,
-                        title = title,
-                        parsedSnippet = parsedSnippet.toString(),
-                    )
-
-                    articles.add(article)
-                }
-
-                // update the search results state
-                if (articles.isEmpty()) {
-                    Log.i("WikiSearchViewModel", "No results found")
-                    searchResults.value = emptyList()
-                } else {
-                    searchResults.value = articles
-                }
-
-                runningSearch.value = false
-            } catch (e: Exception) {
-                Log.e("WikiSearchViewModel", "Error fetching search results", e)
-                // TODO: graceful ui behaviour
-            }
+        try {
+            val results = articlesViewModel.search(wiki, query, context, N_RESULTS)
+            Log.i("WikiSearchViewModel", "search results: ${results.size}")
+            _searchResults.value = results
+        } catch (e: Exception) {
+            Log.e("WikiSearchViewModel", "Error searching wiki: ${e.message}")
+            _searchResults.value = emptyList()
+        } finally {
+            _runningSearch.value = false
+            Log.i("WikiSearchViewModel", "search completed")
         }
     }
 
@@ -144,16 +100,17 @@ class WikiSearchViewModel(private val wiki: Wiki) : ViewModel() {
 @Composable
 fun WikiSearchBar(
     wiki: Wiki,
-    viewModel: WikiSearchViewModel = WikiSearchViewModel(wiki),
+    articlesViewModel: ArticlesViewModel,
+    viewModel: WikiSearchViewModel = WikiSearchViewModel(wiki, articlesViewModel),
     onResultClick: ((Article) -> Unit)? = null,
 ) {
     var searchBarState = rememberSearchBarState()
     var textFieldState = rememberTextFieldState()
     val scope = rememberCoroutineScope()
 
-    val searchResults = viewModel.searchResults.collectAsState()
-    val runningSearch = viewModel.runningSearch.collectAsState()
-    val debouncedInput = viewModel.debouncedInput.collectAsState("")
+    val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
+    val runningSearch by viewModel.runningSearch.collectAsStateWithLifecycle()
+    val debouncedInput by viewModel.debouncedInput.collectAsStateWithLifecycle("")
 
     // side effect to update view model when text field changes
     LaunchedEffect(textFieldState) {
@@ -205,7 +162,7 @@ fun WikiSearchBar(
         inputField = inputField,
     ) {
         // show something if debounced input is empty
-        if (debouncedInput.value.isEmpty()) {
+        if (debouncedInput.isEmpty()) {
             return@ExpandedFullScreenSearchBar Text(
                 text = stringResource(R.string.search_empty_prompt),
                 style = MaterialTheme.typography.bodyMedium,
@@ -214,12 +171,12 @@ fun WikiSearchBar(
         }
 
         // show a loading indicator if the search is running
-        if (runningSearch.value == true) {
+        if (runningSearch == true) {
             return@ExpandedFullScreenSearchBar CenteredLoader()
         }
 
         // empty state
-        if (searchResults.value.isEmpty()) {
+        if (searchResults.isEmpty()) {
             return@ExpandedFullScreenSearchBar Text(
                 text = stringResource(R.string.search_no_results),
                 style = MaterialTheme.typography.bodyMedium,
@@ -229,7 +186,7 @@ fun WikiSearchBar(
 
         // show article list and pass through the click handler
         ArticleList(
-            articles = searchResults.value,
+            articles = searchResults,
             onResultClick = onResultClick,
         )
 
@@ -238,4 +195,3 @@ fun WikiSearchBar(
 }
 
 // TODO: remember ui state for back navigation
-// TODO: back to top floating action button

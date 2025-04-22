@@ -1,6 +1,7 @@
 package codes.ollieg.kiwi.data.room
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -8,6 +9,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+
+enum class SearchSource {
+    WHATEVER_AVAILABLE,
+    CACHE_ONLY,
+    ONLINE_ONLY,
+}
 
 class ArticlesViewModel (application: Application) : AndroidViewModel(application) {
     val repo: ArticlesRepository
@@ -46,9 +53,22 @@ class ArticlesViewModel (application: Application) : AndroidViewModel(applicatio
         return repo.getAllCachedByWikiLive(wiki)
     }
 
-    fun search(wiki: Wiki, query: String, skipCache: Boolean = false): List<Article> {
-        return runBlocking {
-            repo.search(wiki, query)
+    suspend fun search(wiki: Wiki, query: String, context: Context, limit: Int?, searchSource: SearchSource = SearchSource.WHATEVER_AVAILABLE): List<Article> {
+        if (query.isEmpty()) {
+            return emptyList()
+        }
+
+        if (searchSource == SearchSource.WHATEVER_AVAILABLE) {
+            val results = repo.search(wiki, query, context, limit)
+            return results
+        } else if (searchSource == SearchSource.CACHE_ONLY) {
+            val cachedResults = repo.searchCache(wiki, query, limit)
+            return cachedResults
+        } else if (searchSource == SearchSource.ONLINE_ONLY) {
+            val onlineResults = repo.searchOnline(wiki, query, limit)
+            return onlineResults
+        } else {
+            throw IllegalArgumentException("Invalid search source: $searchSource")
         }
     }
 

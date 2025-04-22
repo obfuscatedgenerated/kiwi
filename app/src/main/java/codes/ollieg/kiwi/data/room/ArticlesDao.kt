@@ -52,11 +52,11 @@ interface ArticlesDao {
     @Query("SELECT * FROM Articles WHERE wikiId = :wikiId")
     suspend fun getAllByWikiId(wikiId: Long): List<Article>
 
-    @Query("SELECT * FROM Articles WHERE wikiId = :wikiId AND title LIKE '%' || :query || '%'")
-    fun searchByTitleLive(wikiId: Long, query: String): LiveData<List<Article>>
+    @Query("SELECT * FROM Articles WHERE wikiId = :wikiId AND title LIKE '%' || :query || '%' LIMIT :limit")
+    fun searchByTitleLive(wikiId: Long, query: String, limit: Int?): LiveData<List<Article>>
 
-    @Query("SELECT * FROM Articles WHERE wikiId = :wikiId AND title LIKE '%' || :query || '%'")
-    suspend fun searchByTitle(wikiId: Long, query: String): List<Article>
+    @Query("SELECT * FROM Articles WHERE wikiId = :wikiId AND title LIKE '%' || :query || '%' LIMIT :limit")
+    suspend fun searchByTitle(wikiId: Long, query: String, limit: Int?): List<Article>
 
     @Query("SELECT * FROM Articles WHERE wikiId = :wikiId AND starred = 1")
     suspend fun getStarredByWikiId(wikiId: Long): List<Article>

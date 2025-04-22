@@ -1,9 +1,13 @@
 package codes.ollieg.kiwi.data.room
 
+import android.content.Context
 import android.util.Log
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.fromHtml
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.map
+import codes.ollieg.kiwi.data.checkOnline
 import codes.ollieg.kiwi.data.fetch
 import codes.ollieg.kiwi.data.fromApiBase
 import codes.ollieg.kiwi.data.setQueryParameter
@@ -38,13 +42,19 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         if (cached != null && !skipCache) {
             // check if the cache is still valid
             if (cached.updateTime != null && System.currentTimeMillis() - cached.updateTime!! < CACHE_TTL) {
-                Log.i("ArticlesRepository", "cached article is still within ttl, returning cached article")
+                Log.i(
+                    "ArticlesRepository",
+                    "cached article is still within ttl, returning cached article"
+                )
                 return cached
             }
         }
 
         // check the latest revision id from the api
-        var revUrl = fromApiBase(wiki.apiUrl, "?action=query&prop=revisions&utf8=&format=json&formatversion=2&rvlimit=1&rvprop=ids")
+        var revUrl = fromApiBase(
+            wiki.apiUrl,
+            "?action=query&prop=revisions&utf8=&format=json&formatversion=2&rvlimit=1&rvprop=ids"
+        )
         revUrl = setQueryParameter(revUrl, "pageids", pageId.toString())
 
         Log.i("ArticlesRepository", "revUrl: $revUrl")
@@ -64,7 +74,7 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
                 val page = revisions.getJSONObject(0)
                 latestRevId = page.getJSONArray("revisions").getJSONObject(0).getLong("revid")
                 title = page.getString("title")
-            }  else {
+            } else {
                 Log.e("ArticlesRepository", "no revisions found for page $pageId")
             }
         } catch (e: Exception) {
@@ -89,7 +99,10 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         // this request also gets the url with the info prop
         // TODO: if textextracts isn't installed, could try to parse it here, but previously that didn't go very well
         // TODO: fetch article images
-        var requestUrl = fromApiBase(wiki.apiUrl, "?action=query&prop=extracts|info&explaintext=1&inprop=url&formatversion=2&format=json")
+        var requestUrl = fromApiBase(
+            wiki.apiUrl,
+            "?action=query&prop=extracts|info&explaintext=1&inprop=url&formatversion=2&format=json"
+        )
         requestUrl = setQueryParameter(requestUrl, "pageids", pageId.toString())
 
         Log.i("ArticlesRepository", "articleUrl: $requestUrl")
@@ -185,17 +198,79 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         return articlesDao.deleteAll()
     }
 
-    fun searchCacheLive(wiki: Wiki, query: String): LiveData<List<Article>> {
-        return articlesDao.searchByTitleLive(wiki.id, query)
+    fun searchCacheLive(wiki: Wiki, query: String, limit: Int?): LiveData<List<Article>> {
+        return articlesDao.searchByTitleLive(wiki.id, query, limit)
     }
 
-    suspend fun searchCache(wiki: Wiki, query: String): List<Article> {
-        return articlesDao.searchByTitle(wiki.id, query)
+    suspend fun searchCache(wiki: Wiki, query: String, limit: Int?): List<Article> {
+        return articlesDao.searchByTitle(wiki.id, query, limit)
     }
 
-    suspend fun search(wiki: Wiki, query: String, skipCache: Boolean = false): List<Article> {
-        // TODO: if offline, search in local db. otherwise, search in api
-        return searchCache(wiki, query)
+    suspend fun searchOnline(wiki: Wiki, query: String, limit: Int?): List<Article> {
+        // build the search request url safely
+        var searchUrl = fromApiBase(wiki.apiUrl, "?action=query&list=search&utf8=&format=json")
+        searchUrl = setQueryParameter(searchUrl, "srsearch", query)
+
+        if (limit != null) {
+            searchUrl = setQueryParameter(searchUrl, "srlimit", limit.toString())
+        }
+
+        Log.i("ArticlesRepository", "searchUrl: $searchUrl")
+
+        return try {
+            val searchRes = fetch(searchUrl, withDefaultHeaders())
+            Log.i("ArticlesRepository", "searchRes: $searchRes")
+
+            // parse the json
+            val data = JSONObject(searchRes)
+            val searchData = data.getJSONObject("query").getJSONArray("search")
+            val articles = mutableListOf<Article>()
+
+            // iterate over the search results and create article objects
+            for (i in 0 until searchData.length()) {
+                val entry = searchData.getJSONObject(i)
+                val pageId = entry.getLong("pageid")
+                val title = entry.getString("title")
+
+                var snippetHtml: String? = null
+                try {
+                    snippetHtml = entry.getString("snippet")
+                } catch (e: Exception) {
+                    Log.e("ArticlesRepository", "Error getting snippet (or null)", e)
+                }
+
+                var parsedSnippet = AnnotatedString.fromHtml(snippetHtml ?: "")
+
+                val article = Article(
+                    wikiId = wiki.id,
+                    pageId = pageId,
+                    title = title,
+                    parsedSnippet = parsedSnippet.toString(),
+                )
+
+                articles.add(article)
+            }
+
+            // return the search results
+            return articles
+        } catch (e: Exception) {
+            Log.e("ArticlesRepository", "Error fetching search results", e)
+            return emptyList()
+        }
+    }
+
+    suspend fun search(wiki: Wiki, query: String, context: Context, limit: Int?): List<Article> {
+        if (query.isEmpty()) {
+            return emptyList()
+        }
+
+        if (checkOnline(context)) {
+            Log.i("ArticlesRepository", "device is online, searching online")
+            return searchOnline(wiki, query, limit)
+        } else {
+            Log.i("ArticlesRepository", "device is offline, searching cache")
+            return searchCache(wiki, query, limit)
+        }
     }
 
     fun getStarredByWikiLive(wiki: Wiki): LiveData<List<Article>> {
@@ -212,11 +287,11 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         val articles = getAllCachedByWiki(wiki)
         val bytes = articles.sumOf { article ->
             5L + // 4 longs and a bool TODO: use int values to determine actual bytes used
-            article.title.length +
-            (article.parsedContent?.length ?: 0) +
-            (article.parsedSnippet?.length ?: 0) +
-            (article.pageUrl?.length ?: 0) +
-            (article.thumbnail?.size ?: 0)
+                    article.title.length +
+                    (article.parsedContent?.length ?: 0) +
+                    (article.parsedSnippet?.length ?: 0) +
+                    (article.pageUrl?.length ?: 0) +
+                    (article.thumbnail?.size ?: 0)
         }
         return StorageUsageEstimate(bytes, articles.size)
     }
@@ -228,11 +303,11 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         val bytes = articles.map { articles ->
             articles.sumOf { article ->
                 5L + // 4 longs and a bool TODO: use int values to determine actual bytes used
-                article.title.length +
-                (article.parsedContent?.length ?: 0) +
-                (article.parsedSnippet?.length ?: 0) +
-                (article.pageUrl?.length ?: 0) +
-                (article.thumbnail?.size ?: 0)
+                        article.title.length +
+                        (article.parsedContent?.length ?: 0) +
+                        (article.parsedSnippet?.length ?: 0) +
+                        (article.pageUrl?.length ?: 0) +
+                        (article.thumbnail?.size ?: 0)
             }
         }
 

@@ -113,6 +113,7 @@ fun ScreenWikiHome(
     ) {
         WikiSearchBar(
             wiki = wiki.value ?: return,
+            articlesViewModel = articlesViewModel,
             onResultClick = { article ->
                 // go to relevant article page using wiki id and its mediawiki page id
                 navController.navigate("${AppScreens.Article.name}/${article.wikiId}/${article.pageId}")
