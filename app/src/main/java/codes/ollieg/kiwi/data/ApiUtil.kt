@@ -54,8 +54,6 @@ fun checkOnline(context: Context): Boolean {
             capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
 }
 
-// TODO: implement auth from wiki entity
-
 // simpler wrapper around the ktor client
 suspend fun fetch(url: String, headers: Map<String, String> = emptyMap(), httpMethod: HttpMethod = HttpMethod.Get, body: Any? = null): String {
     val response = client.request(url) {
