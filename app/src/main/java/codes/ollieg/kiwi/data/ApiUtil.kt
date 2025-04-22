@@ -2,6 +2,7 @@ package codes.ollieg.kiwi.data
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -44,12 +45,13 @@ private val client = HttpClient(CIO) {
 }
 
 fun checkOnline(context: Context): Boolean {
-    // check if the device is connected to the internet
-    // this api is deprecated, but i couldn't find another way that works nicely with broadcast receivers
-    // TODO: update
     val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    val networkInfo = connectivityManager.activeNetworkInfo
-    return networkInfo != null && networkInfo.isConnected
+
+    val network = connectivityManager.activeNetwork ?: return false
+    val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+
+    return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
 }
 
 // TODO: implement auth from wiki entity
