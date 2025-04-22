@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -54,8 +55,8 @@ class WikiSearchViewModel(private val wiki: Wiki, private val articlesViewModel:
     @OptIn(FlowPreview::class)
     val debouncedInput = liveInput.debounce(DEBOUNCE_TIME).distinctUntilChanged()
 
-    private val _searchResults = MutableStateFlow<List<Article>>(emptyList())
-    private var _runningSearch = MutableStateFlow(false)
+    private val _searchResults = MutableStateFlow(listOf<Article>())
+    private val _runningSearch = MutableStateFlow(false)
 
     // public read only stateflows
     val searchResults = _searchResults.asStateFlow()
@@ -101,9 +102,10 @@ class WikiSearchViewModel(private val wiki: Wiki, private val articlesViewModel:
 fun WikiSearchBar(
     wiki: Wiki,
     articlesViewModel: ArticlesViewModel,
-    viewModel: WikiSearchViewModel = WikiSearchViewModel(wiki, articlesViewModel),
     onResultClick: ((Article) -> Unit)? = null,
 ) {
+    val viewModel = remember { WikiSearchViewModel(wiki, articlesViewModel) }
+
     var searchBarState = rememberSearchBarState()
     var textFieldState = rememberTextFieldState()
     val scope = rememberCoroutineScope()
@@ -111,6 +113,8 @@ fun WikiSearchBar(
     val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
     val runningSearch by viewModel.runningSearch.collectAsStateWithLifecycle()
     val debouncedInput by viewModel.debouncedInput.collectAsStateWithLifecycle("")
+
+    Log.i("WikiSearchBar", "ui searchResults: ${searchResults.size}")
 
     // side effect to update view model when text field changes
     LaunchedEffect(textFieldState) {
