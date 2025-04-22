@@ -17,7 +17,7 @@ Kiwi illustration by <a href="https://pixabay.com/users/clker-free-vector-images
 #### Your application should also include three of the following:
 
 - [ ] ~~Use firebase for storing and retrieving data~~
-- [ ] Receive Broadcast events and make use of them in meaningful ways
+- [x] Receive Broadcast events and make use of them in meaningful ways
 - [x] Implement Android ShareSheet
 - [ ] ~~Implement your own Service~~
 - [ ] ~~Use Notifications~~
