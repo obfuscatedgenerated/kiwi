@@ -36,6 +36,8 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
     }
 
     suspend fun getById(wiki: Wiki, pageId: Long, skipCache: Boolean = false): Article? {
+        // TODO: handle redirects
+
         // check the cache for it
         val cached = getByIdCached(wiki, pageId)
 
