@@ -11,15 +11,19 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -27,6 +31,7 @@ import codes.ollieg.kiwi.data.room.ArticlesViewModel
 import codes.ollieg.kiwi.data.room.WikisViewModel
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScreenArticle(
     wikiId: Long,
@@ -41,9 +46,11 @@ fun ScreenArticle(
     val articlesViewModel = ArticlesViewModel(context)
 
     val wiki = wikisViewModel.getById(wikiId)!!
-    val article = articlesViewModel.getByIdLive(wiki, articleId).observeAsState()
 
-    // TODO: pull to refresh (use skipCache = true when loading article)
+    var skipCache by remember { mutableStateOf(false) }
+    val article = articlesViewModel.getByIdLive(wiki, articleId, skipCache).observeAsState()
+
+    var isRefreshing by remember { mutableStateOf(false) }
 
     if (article.value == null) {
         CenteredLoader()
@@ -85,11 +92,28 @@ fun ScreenArticle(
                 }
             }
         ) { paddingValues ->
-            ArticleContent(
-                article.value!!.parsedContent,
-                lazyListState = lazyListState,
-                modifier = Modifier.padding(paddingValues)
-            )
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = {
+                    // change skipCache to reload article
+                    skipCache = true
+                    isRefreshing = true
+                }
+            ) {
+                var content = article.value?.parsedContent
+
+                // change skipCache to false after refreshing
+                if (skipCache) {
+                    skipCache = false
+                    isRefreshing = false
+                }
+
+                ArticleContent(
+                    content,
+                    lazyListState = lazyListState,
+                    modifier = Modifier.padding(paddingValues)
+                )
+            }
         }
     }
 }
