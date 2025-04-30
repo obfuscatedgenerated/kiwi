@@ -202,7 +202,12 @@ fun replaceQueryParameters(url: URL, params: Map<String, String>): URL {
     // join the parameters with &key=value (url encoded)
     val query = params.entries.joinToString("&") {
         val urlEncodedKey = URLEncoder.encode(it.key, "UTF-8")
-        val urlEncodedValue = URLEncoder.encode(it.value, "UTF-8")
+        var urlEncodedValue = URLEncoder.encode(it.value, "UTF-8")
+
+        // bit of a hack, but mediawiki insists on actual | and not the url escaped %257C in the values
+        // this function can cause this to happen, so replace it back
+        urlEncodedValue = urlEncodedValue.replace("%257C", "|")
+
         "${urlEncodedKey}=${urlEncodedValue}"
     }
 
