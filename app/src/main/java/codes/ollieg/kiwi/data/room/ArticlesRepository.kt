@@ -105,7 +105,7 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         // TODO: fetch article images
         var requestUrl = fromApiBase(
             wiki.apiUrl,
-            "?action=query&prop=extracts|info|pageimages&explaintext=1&inprop=url&formatversion=2&format=json"
+            "?action=query&prop=extracts|info|pageimages&explaintext=1&inprop=url&pilicense=any&formatversion=2&format=json"
         )
         requestUrl = setQueryParameter(requestUrl, "pageids", pageId.toString())
         requestUrl = setQueryParameter(requestUrl, "pithumbsize", THUMB_SIZE.toString())
