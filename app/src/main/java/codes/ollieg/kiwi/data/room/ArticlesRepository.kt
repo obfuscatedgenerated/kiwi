@@ -139,6 +139,10 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
             title = "Article $pageId"
         }
 
+        // search snippet is centered around the query provided. for the snippets here (for home page),
+        // just use the first chars of content, which will be more relevant and doesn't require additional queries
+        val snippet = articleText?.take(100) ?: ""
+
         // update the cache, making sure to update the revision id and update time
         val article = Article(
             wikiId = wiki.id,
@@ -146,7 +150,7 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
 
             title = title,
 
-            parsedSnippet = cached?.parsedSnippet, // TODO: should we fetch a snippet? its used for search
+            parsedSnippet = snippet,
             parsedContent = articleText,
             thumbnail = cached?.thumbnail, // TODO: when should thumbnails be fetched?
 
