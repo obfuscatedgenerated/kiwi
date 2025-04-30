@@ -75,6 +75,26 @@ suspend fun fetch(url: URL, headers: Map<String, String> = emptyMap(), httpMetho
     return fetch(url.toString(), headers, httpMethod, body)
 }
 
+suspend fun fetchBytes(url: String, headers: Map<String, String> = emptyMap(), httpMethod: HttpMethod = HttpMethod.Get, body: Any? = null): ByteArray {
+    val response = client.request(url) {
+        method = httpMethod
+
+        headers.forEach { (key, value) ->
+            header(key, value)
+        }
+
+        if (body != null) {
+            setBody(body)
+        }
+    }
+
+    return response.body()
+}
+
+suspend fun fetchBytes(url: URL, headers: Map<String, String> = emptyMap(), httpMethod: HttpMethod = HttpMethod.Get, body: Any? = null): ByteArray {
+    return fetchBytes(url.toString(), headers, httpMethod, body)
+}
+
 // uses the client to log in to a mediawiki and persists the session in memory
 suspend fun logInToMediawiki(apiUrl: String, username: String, password: String) {
     // (not using try catch here, just have it throw an error if anything is wrong)

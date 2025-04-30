@@ -77,6 +77,8 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:3.1.2")
     implementation("io.ktor:ktor-client-logging:3.1.2")
 
+    implementation("io.coil-kt.coil3:coil-compose:3.1.0")
+
     ksp("androidx.room:room-compiler:2.6.1")
 
     testImplementation("junit:junit:4.13.2")

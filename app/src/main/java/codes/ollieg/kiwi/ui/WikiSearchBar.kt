@@ -191,6 +191,7 @@ fun WikiSearchBar(
         // show article list and pass through the click handler
         ArticleList(
             articles = searchResults,
+            useThumbnails = false,
             onResultClick = onResultClick,
         )
 

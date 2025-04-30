@@ -9,6 +9,7 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.map
 import codes.ollieg.kiwi.data.checkOnline
 import codes.ollieg.kiwi.data.fetch
+import codes.ollieg.kiwi.data.fetchBytes
 import codes.ollieg.kiwi.data.fromApiBase
 import codes.ollieg.kiwi.data.setQueryParameter
 import codes.ollieg.kiwi.data.withDefaultHeaders
@@ -19,6 +20,7 @@ import org.json.JSONObject
 // (or explicitly from the cache if using the cache methods)
 
 const val CACHE_TTL = 1000 * 60 * 5 // 5 minutes
+const val THUMB_SIZE = 500
 
 class ArticlesRepository(private val articlesDao: ArticlesDao) {
     val allCachedArticlesLive: LiveData<List<Article>> = articlesDao.getAllLive()
@@ -103,14 +105,16 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         // TODO: fetch article images
         var requestUrl = fromApiBase(
             wiki.apiUrl,
-            "?action=query&prop=extracts|info&explaintext=1&inprop=url&formatversion=2&format=json"
+            "?action=query&prop=extracts|info|pageimages&explaintext=1&inprop=url&formatversion=2&&format=json"
         )
         requestUrl = setQueryParameter(requestUrl, "pageids", pageId.toString())
+        requestUrl = setQueryParameter(requestUrl, "pithumbsize", THUMB_SIZE.toString())
 
         Log.i("ArticlesRepository", "articleUrl: $requestUrl")
 
         var articleText: String? = null
         var articlePageUrl: String? = null
+        var articleThumbUrl: String? = null
         try {
             val articleRes = fetch(requestUrl, withDefaultHeaders())
             Log.i("ArticlesRepository", "articleRes: $articleRes")
@@ -125,6 +129,7 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
                 val page = pagesData.getJSONObject(0)
                 articleText = page.getString("extract")
                 articlePageUrl = page.getString("fullurl")
+                articleThumbUrl = page.getJSONObject("thumbnail").getString("source")
             } else {
                 Log.e("ArticlesRepository", "no pages found for page $pageId")
             }
@@ -143,6 +148,18 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         // just use the first chars of content, which will be more relevant and doesn't require additional queries
         val snippet = articleText?.take(100) ?: ""
 
+        // if there is no cached thumbnail, fetch the url provided from pageimages
+        var thumbnail: ByteArray? = cached?.thumbnail
+        if (thumbnail == null) {
+            try {
+                if (articleThumbUrl != null) {
+                    thumbnail = fetchBytes(articleThumbUrl, withDefaultHeaders())
+                }
+            } catch (e: Exception) {
+                Log.e("ArticlesRepository", "Error fetching thumbnail", e)
+            }
+        }
+
         // update the cache, making sure to update the revision id and update time
         val article = Article(
             wikiId = wiki.id,
@@ -152,7 +169,7 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
 
             parsedSnippet = snippet,
             parsedContent = articleText,
-            thumbnail = cached?.thumbnail, // TODO: when should thumbnails be fetched?
+            thumbnail = thumbnail,
 
             pageUrl = articlePageUrl,
 
