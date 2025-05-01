@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -32,8 +33,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import codes.ollieg.kiwi.R
+import codes.ollieg.kiwi.data.room.Article
 import codes.ollieg.kiwi.data.room.ArticlesViewModel
 import codes.ollieg.kiwi.data.room.WikisViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -52,12 +56,20 @@ fun ScreenArticle(
 
     val wiki = wikisViewModel.getById(wikiId)!!
 
-    var skipCache by remember { mutableStateOf(false) }
-    val article = articlesViewModel.getByIdLive(wiki, articleId, skipCache).observeAsState()
+    var article: Article? by remember { mutableStateOf(null) }
+
+    LaunchedEffect(articleId) {
+        Log.i("ScreenArticle", "Loading article ONCE with id: $articleId")
+        article = null
+
+        CoroutineScope(Dispatchers.IO).launch {
+            article = articlesViewModel.repo.getById(wiki, articleId)
+        }
+    }
 
     var isRefreshing by remember { mutableStateOf(false) }
 
-    if (article.value == null) {
+    if (article == null) {
         CenteredLoader()
         // TODO: might get stuck if cache value is also null, might need to return explcitly "false" when that happens or do a timeout
     } else {
@@ -100,28 +112,32 @@ fun ScreenArticle(
             PullToRefreshBox(
                 isRefreshing = isRefreshing,
                 onRefresh = {
-                    // change skipCache to reload article
-                    skipCache = true
                     isRefreshing = true
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        Log.i("ScreenArticle", "Refreshing article with id: $articleId")
+
+                        // explicitly skip cache to reload from api
+                        article = articlesViewModel.repo.getById(wiki, articleId, true)
+                    }
                 }
             ) {
-                var content = article.value?.parsedContent
+                var content = article?.parsedContent
 
-                // change skipCache to false after refreshing
-                if (skipCache) {
-                    skipCache = false
+                // change isRefreshing to false once loaded
+                if (isRefreshing) {
                     isRefreshing = false
                 }
 
                 ArticleContent(
                     content,
-                    article.value?.thumbnail,
+                    article?.thumbnail,
                     lazyListState = lazyListState,
                     modifier = Modifier.padding(paddingValues).combinedClickable(
                         onClick = {},
                         onDoubleClick = {
                             // double tap to star
-                            val articleValue = article.value ?: return@combinedClickable
+                            val articleValue = article ?: return@combinedClickable
 
                             Log.i("ScreenArticle", "Double tapped to star article: ${articleValue.title}")
 
