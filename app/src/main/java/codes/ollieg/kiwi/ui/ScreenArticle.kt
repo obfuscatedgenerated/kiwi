@@ -110,6 +110,7 @@ fun ScreenArticle(
 
                 ArticleContent(
                     content,
+                    article.value?.thumbnail,
                     lazyListState = lazyListState,
                     modifier = Modifier.padding(paddingValues)
                 )
