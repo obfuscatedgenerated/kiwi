@@ -22,4 +22,4 @@ Kiwi illustration by <a href="https://pixabay.com/users/clker-free-vector-images
 - [ ] ~~Implement your own Service~~
 - [ ] ~~Use Notifications~~
 - [ ] ~~Adapt your app for different screen sizes~~
-- [ ] Capture touch gestures and make reasonable use of them
+- [x] Capture touch gestures and make reasonable use of them
