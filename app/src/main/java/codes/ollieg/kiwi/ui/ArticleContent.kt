@@ -1,5 +1,6 @@
 package codes.ollieg.kiwi.ui
 
+import android.app.Application
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,6 +35,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import codes.ollieg.kiwi.R
+import codes.ollieg.kiwi.data.PreferencesViewModel
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -54,6 +57,11 @@ fun ArticleContent(
             modifier = Modifier.padding(16.dp)
         )
     }
+
+    val context = LocalContext.current.applicationContext
+    val preferencesViewModel = PreferencesViewModel(context as Application)
+
+    val fontFamilyState by preferencesViewModel.fontFamily.observeAsState()
 
     val sections = parsedContent.split("\n\n")
 
@@ -143,7 +151,7 @@ fun ArticleContent(
                         end = 16.dp
                     ),
                     lineHeight = 24.sp, // more readable TODO: configurable
-                    fontFamily = FontFamily.Serif, // TODO: connect to preference system
+                    fontFamily = fontFamilyState,
                     fontSize = textStyle.fontSize,
                 )
 

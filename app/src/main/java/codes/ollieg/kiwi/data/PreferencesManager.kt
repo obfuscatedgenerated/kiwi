@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.map
 
 private val Context.dataStore by preferencesDataStore(name = "kiwiPrefs")
 
-class KiwiPreferencesManager(private val context: Context) {
+class PreferencesManager(private val context: Context) {
     companion object {
         private val FONT_KEY = stringPreferencesKey("font")
     }
