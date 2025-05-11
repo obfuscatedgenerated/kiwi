@@ -117,7 +117,7 @@ fun ScreenManageStorage(
                             clearDialogVisible = false
                         },
                         colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.tertiary
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     ) {
                         Text(stringResource(R.string.cancel))
