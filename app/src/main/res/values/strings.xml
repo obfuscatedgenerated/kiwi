@@ -96,5 +96,8 @@
     <string name="search_empty_prompt">Type something to search...</string>
     <string name="search_no_results">No results found.</string>
     <string name="overlay_close">Close image overlay</string>
+
     <string name="cancel">Cancel</string>
+    <string name="clear">Clear</string>
+    <string name="delete">Delete</string>
 </resources>

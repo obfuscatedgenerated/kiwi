@@ -6,11 +6,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -87,7 +89,7 @@ fun ScreenManageStorage(
                     clearDialogVisible = false
                 },
                 confirmButton = {
-                    Button(
+                    TextButton(
                         onClick = {
                             Log.i("ScreenManageStorage", "Clear confirmed")
 
@@ -100,17 +102,23 @@ fun ScreenManageStorage(
                             }
 
                             clearDialogVisible = false
-                        }
+                        },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        )
                     ) {
-                        Text(stringResource(R.string.confirm))
+                        Text(stringResource(R.string.clear))
                     }
                 },
                 dismissButton = {
-                    Button(
+                    TextButton(
                         onClick = {
                             Log.i("ScreenManageStorage", "Clear cancelled")
                             clearDialogVisible = false
-                        }
+                        },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.tertiary
+                        )
                     ) {
                         Text(stringResource(R.string.cancel))
                     }

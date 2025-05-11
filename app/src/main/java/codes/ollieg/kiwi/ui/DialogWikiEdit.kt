@@ -27,6 +27,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -240,7 +241,7 @@ fun DialogWikiEdit(
                         deleteDialogShow = false
                     },
                     confirmButton = {
-                        Button(
+                        TextButton(
                             onClick = {
                                 Log.i("DialogWikiEdit", "Delete confirmed")
 
@@ -250,17 +251,23 @@ fun DialogWikiEdit(
                                 // dismiss the dialog and the parent edit dialog
                                 deleteDialogShow = false
                                 onDismissRequest()
-                            }
+                            },
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
                         ) {
-                            Text(stringResource(R.string.confirm))
+                            Text(stringResource(R.string.delete))
                         }
                     },
                     dismissButton = {
-                        Button(
+                        TextButton(
                             onClick = {
                                 Log.i("DialogWikiEdit", "Delete cancelled")
                                 deleteDialogShow = false
-                            }
+                            },
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.tertiary
+                            )
                         ) {
                             Text(stringResource(R.string.cancel))
                         }
