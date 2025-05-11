@@ -8,7 +8,7 @@ Kiwi illustration by <a href="https://pixabay.com/users/clker-free-vector-images
 - [x] (2%) Have a minimum of two distinct screens, created using composables.
 - [x] (4%) Use the navigation component to move between screens in your app.
 - [x] (2%) Use Intent to move to an outside app.
-- [ ] (4%) Work properly with the app lifecycle (including rotate screen changes).
+- [x] (4%) Work properly with the app lifecycle (including rotate screen changes).
 - [x] (4%) Use permissions and use them responsibly.
 - [x] (4%) Make use of local storage
 - [ ] (5%) Create your own ContentProvider and create tests for it
