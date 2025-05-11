@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -96,6 +97,8 @@ fun DialogWikiEdit(
             authPassword = ""
         )
     }
+
+    var deleteDialogShow by remember { mutableStateOf(false) }
 
     // wiki object fields copied into state to avoid weirdness when editing form fields (reverts to initial value due to it being reset each paint)
     // to be copied back into the wiki object when saving
@@ -219,6 +222,52 @@ fun DialogWikiEdit(
                 }
             }
         ) { padding ->
+            if (deleteDialogShow) {
+                AlertDialog(
+                    title = {
+                        Text(
+                            text = stringResource(R.string.delete_wiki_dialog_title, wiki.name)
+                        )
+                    },
+                    text = {
+                        Text(
+                            text = stringResource(
+                                R.string.delete_wiki_dialog_text,
+                            )
+                        )
+                    },
+                    onDismissRequest = {
+                        deleteDialogShow = false
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                Log.i("DialogWikiEdit", "Delete confirmed")
+
+                                // TODO: check success
+                                deleteWiki(wiki.id, wikisViewModel)
+
+                                // dismiss the dialog and the parent edit dialog
+                                deleteDialogShow = false
+                                onDismissRequest()
+                            }
+                        ) {
+                            Text(stringResource(R.string.confirm))
+                        }
+                    },
+                    dismissButton = {
+                        Button(
+                            onClick = {
+                                Log.i("DialogWikiEdit", "Delete cancelled")
+                                deleteDialogShow = false
+                            }
+                        ) {
+                            Text(stringResource(R.string.cancel))
+                        }
+                    }
+                )
+            }
+
             Column(
                 modifier = Modifier.padding(padding)
             ) {
@@ -336,13 +385,7 @@ fun DialogWikiEdit(
                     ) {
                         Button(
                             onClick = {
-                                /* TODO: confirm delete */
-                                val success = deleteWiki(wikiId, wikisViewModel)
-                                if (success) {
-                                    onDismissRequest()
-                                } else {
-                                    /* TODO: show error message */
-                                }
+                                deleteDialogShow = true
                             },
                             colors = ButtonDefaults.textButtonColors(),
 

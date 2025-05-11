@@ -5,12 +5,18 @@ import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
@@ -18,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import codes.ollieg.kiwi.R
 import codes.ollieg.kiwi.data.room.ArticlesViewModel
+import codes.ollieg.kiwi.data.room.Wiki
 import codes.ollieg.kiwi.data.room.WikisViewModel
 
 @Composable
@@ -29,15 +36,18 @@ fun ScreenManageStorage(
 
     val allWikis = wikisViewModel.allWikis.observeAsState()
 
+    var clearDialogVisible by remember { mutableStateOf(false) }
+    var clearDialogWiki: Wiki? by remember { mutableStateOf(null) }
+
     Scaffold (
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = {
                     Log.i("ScreenManageStorage", "Clear all button clicked")
-                    // TODO: confirm delete
-                    // TODO: any way to preserve starred articles?
-                    articlesViewModel.deleteAllFromCache()
-                    // TODO: check success
+
+                    // null means all wikis
+                    clearDialogWiki = null
+                    clearDialogVisible = true
                 },
                 modifier = Modifier.padding(16.dp),
             ) {
@@ -53,6 +63,61 @@ fun ScreenManageStorage(
             }
         }
     ) { padding ->
+        if (clearDialogVisible) {
+            AlertDialog(
+                title = {
+                    val clearDialogWikiName = if (clearDialogWiki == null) {
+                        stringResource(R.string.all_wikis)
+                    } else {
+                        clearDialogWiki!!.name
+                    }
+
+                    Text(
+                        text = stringResource(R.string.clear_wiki_storage_dialog_title, clearDialogWikiName)
+                    )
+                },
+                text = {
+                    Text(
+                        text = stringResource(
+                            R.string.clear_wiki_storage_dialog_text
+                        )
+                    )
+                },
+                onDismissRequest = {
+                    clearDialogVisible = false
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            Log.i("ScreenManageStorage", "Clear confirmed")
+
+                            if (clearDialogWiki == null) {
+                                // clear all wikis
+                                articlesViewModel.deleteAllFromCache()
+                            } else {
+                                // clear specific wiki
+                                articlesViewModel.deleteAllByWikiFromCache(clearDialogWiki!!)
+                            }
+
+                            clearDialogVisible = false
+                        }
+                    ) {
+                        Text(stringResource(R.string.confirm))
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = {
+                            Log.i("ScreenManageStorage", "Clear cancelled")
+                            clearDialogVisible = false
+                        }
+                    ) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                }
+            )
+        }
+
         WikiList(
             wikis = allWikis.value ?: emptyList(),
             subtexts = allWikis.value?.map { wiki ->
@@ -97,10 +162,9 @@ fun ScreenManageStorage(
                     wiki = wiki,
                     onClick = {
                         Log.i("ScreenManageStorage", "Delete button clicked for ${wiki.name}")
-                        // TODO: confirm delete
-                        // TODO: any way to preserve starred articles?
-                        articlesViewModel.deleteAllByWikiFromCache(wiki)
-                        // TODO: check success
+
+                        clearDialogWiki = wiki
+                        clearDialogVisible = true
                     }
                 )
             },
