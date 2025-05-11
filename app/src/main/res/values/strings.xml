@@ -100,4 +100,6 @@
     <string name="cancel">Cancel</string>
     <string name="clear">Clear</string>
     <string name="delete">Delete</string>
+    <string name="article_font">Article font</string>
+    <string name="line_height">Line height</string>
 </resources>

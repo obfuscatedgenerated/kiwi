@@ -62,6 +62,7 @@ fun ArticleContent(
     val preferencesViewModel = PreferencesViewModel(context as Application)
 
     val fontFamilyState by preferencesViewModel.fontFamily.observeAsState()
+    val lineHeightState by preferencesViewModel.lineHeight.observeAsState()
 
     val sections = parsedContent.split("\n\n")
 
@@ -150,7 +151,7 @@ fun ArticleContent(
                         start = 16.dp,
                         end = 16.dp
                     ),
-                    lineHeight = 24.sp, // more readable TODO: configurable
+                    lineHeight = lineHeightState?.sp ?: 24.sp,
                     fontFamily = fontFamilyState,
                     fontSize = textStyle.fontSize,
                 )

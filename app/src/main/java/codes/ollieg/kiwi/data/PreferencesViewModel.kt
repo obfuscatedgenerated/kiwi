@@ -45,4 +45,19 @@ class PreferencesViewModel(application: Application): AndroidViewModel(applicati
             preferencesManager.saveFont(name)
         }
     }
+
+    val lineHeight: LiveData<Int> = preferencesManager.lineHeightFlow
+        .map{ it ?: 24 } // default value 24
+        .asLiveData()
+
+    fun setLineHeight(lineHeight: Int) {
+        // check line height is valid
+        if (lineHeight <= 0) {
+            throw IllegalArgumentException("Line height must be greater than 0")
+        }
+
+        viewModelScope.launch {
+            preferencesManager.saveLineHeight(lineHeight)
+        }
+    }
 }
