@@ -54,6 +54,7 @@ import codes.ollieg.kiwi.data.getSiteInfo
 import codes.ollieg.kiwi.data.logInToMediawiki
 import codes.ollieg.kiwi.data.room.Wiki
 import codes.ollieg.kiwi.data.room.WikisViewModel
+import kotlinx.coroutines.delay
 
 private fun saveWiki(wiki: Wiki, wikisViewModel: WikisViewModel): Boolean {
     // tries to update/insert the wiki into the database but will return false if it fails
@@ -187,8 +188,10 @@ fun DialogWikiEdit(
     val (first, second, third, fourth, fifth, sixth) = remember { FocusRequester.createRefs() }
 
     // run check when config changes
-    // TODO debounce this
     LaunchedEffect(wikiApiUrl, wikiAuthUsername, wikiAuthPassword) {
+        // debounce
+        delay(250L)
+
         wikiConfigErrorId = checkConfig(
             apiUrl = wikiApiUrl,
             authUsername = wikiAuthUsername,
