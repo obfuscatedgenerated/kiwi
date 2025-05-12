@@ -50,12 +50,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import codes.ollieg.kiwi.R
-import codes.ollieg.kiwi.data.fetch
 import codes.ollieg.kiwi.data.getSiteInfo
 import codes.ollieg.kiwi.data.logInToMediawiki
 import codes.ollieg.kiwi.data.room.Wiki
 import codes.ollieg.kiwi.data.room.WikisViewModel
-import codes.ollieg.kiwi.data.withDefaultHeaders
 
 private fun saveWiki(wiki: Wiki, wikisViewModel: WikisViewModel): Boolean {
     // tries to update/insert the wiki into the database but will return false if it fails
@@ -82,28 +80,28 @@ private fun deleteWiki(wikiId: Long, wikisViewModel: WikisViewModel): Boolean {
     }
 }
 
-// returns the error message if the config is invalid, or null if it is valid
+// returns the error message resource id if the config is invalid, or null if it is valid
 private suspend fun checkConfig(
     apiUrl: String,
     authUsername: String,
     authPassword: String
-): String? {
+): Int? {
     // basic sanity checks
     if (apiUrl == "") {
         Log.e("DialogWikiEdit", "Empty api url")
-        return "API URL is empty"
+        return R.string.config_empty_url
     }
 
     val apiUrlValid = apiUrl.startsWith("https://") || apiUrl.startsWith("http://")
     if (!apiUrlValid) {
         Log.e("DialogWikiEdit", "Invalid api url: $apiUrl")
-        return "Invalid URL protocol"
+        return R.string.config_invalid_url_protocol
     }
 
     val apiEndsWith = apiUrl.endsWith("/api.php")
     if (!apiEndsWith) {
         Log.e("DialogWikiEdit", "Invalid api url: $apiUrl")
-        return "URL doesn't end with api.php"
+        return R.string.config_no_api_php
     }
 
     // try logging in first, as some wikis strictly require authentication
@@ -116,7 +114,7 @@ private suspend fun checkConfig(
             )
         } catch (e: Exception) {
             Log.e("DialogWikiEdit", "Error logging in: ${e.message}")
-            return "Login failed"
+            return R.string.config_login_failed
         }
     }
 
@@ -131,16 +129,16 @@ private suspend fun checkConfig(
 
         if (!hasTextExtracts) {
             Log.e("DialogWikiEdit", "API does not support TextExtracts")
-            return "Wiki needs TextExtracts extension"
+            return R.string.config_no_textextracts
         }
 
         if (!hasPageImages) {
             Log.e("DialogWikiEdit", "API does not support PageImages")
-            return "Wiki needs PageImages extension"
+            return R.string.config_no_pageimages
         }
     } catch (e: Exception) {
         Log.e("DialogWikiEdit", "Error fetching site info: ${e.message}")
-        return "Couldn't access API. Try authentication?"
+        return R.string.config_cannot_access
     }
 
     return null
@@ -177,7 +175,7 @@ fun DialogWikiEdit(
     var wikiAuthUsername by remember { mutableStateOf(wiki.authUsername) }
     var wikiAuthPassword by remember { mutableStateOf(wiki.authPassword) }
 
-    var wikiConfigError by remember { mutableStateOf<String?>(null) }
+    var wikiConfigErrorId by remember { mutableStateOf<Int?>(null) }
 
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
@@ -191,14 +189,14 @@ fun DialogWikiEdit(
     // run check when config changes
     // TODO debounce this
     LaunchedEffect(wikiApiUrl, wikiAuthUsername, wikiAuthPassword) {
-        wikiConfigError = checkConfig(
+        wikiConfigErrorId = checkConfig(
             apiUrl = wikiApiUrl,
             authUsername = wikiAuthUsername,
             authPassword = wikiAuthPassword
         )
 
         // if no name is set, use the site name as the wiki name
-        if (wikiConfigError === null && wikiName === "") {
+        if (wikiConfigErrorId === null && wikiName === "") {
             try {
                 val siteInfo = getSiteInfo(wikiApiUrl)
                 wikiName = siteInfo.siteName
@@ -303,7 +301,7 @@ fun DialogWikiEdit(
                         .padding(bottom = bottomPadding)
                 ) {
                     // tick for valid config, cross for invalid
-                    if (wikiConfigError === null) {
+                    if (wikiConfigErrorId === null) {
                         Icon(
                             Icons.Default.Check,
                             contentDescription = null
@@ -319,14 +317,14 @@ fun DialogWikiEdit(
                     Spacer(modifier = Modifier.padding(horizontal = 8.dp))
 
                     // show looks good if the config is valid, otherwise show the error message
-                    val text = wikiConfigError ?: stringResource(R.string.config_ok)
-                    val color = if (wikiConfigError == null) {
+                    val resourceId = wikiConfigErrorId ?: R.string.config_ok
+                    val color = if (wikiConfigErrorId == null) {
                         MaterialTheme.colorScheme.onSurfaceVariant
                     } else {
                         MaterialTheme.colorScheme.error
                     }
                     Text(
-                        text,
+                        text = stringResource(resourceId),
                         style = MaterialTheme.typography.bodyLarge,
                         color = color,
                     )

@@ -102,4 +102,11 @@
     <string name="delete">Delete</string>
     <string name="article_font">Article font</string>
     <string name="line_height">Line height</string>
+    <string name="config_empty_url">API URL is empty</string>
+    <string name="config_invalid_url_protocol">Invalid URL protocol</string>
+    <string name="config_no_api_php">URL doesn\'t end with api.php</string>
+    <string name="config_login_failed">Login failed</string>
+    <string name="config_no_textextracts">Wiki needs TextExtracts extension</string>
+    <string name="config_no_pageimages">Wiki needs PageImages extension</string>
+    <string name="config_cannot_access">Couldn\'t access API. Try authentication?</string>
 </resources>
