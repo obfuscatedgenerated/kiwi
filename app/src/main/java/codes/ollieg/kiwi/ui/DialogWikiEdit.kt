@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,10 +50,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import codes.ollieg.kiwi.R
+import codes.ollieg.kiwi.data.fetch
+import codes.ollieg.kiwi.data.getSiteInfo
+import codes.ollieg.kiwi.data.logInToMediawiki
 import codes.ollieg.kiwi.data.room.Wiki
 import codes.ollieg.kiwi.data.room.WikisViewModel
+import codes.ollieg.kiwi.data.withDefaultHeaders
 
-fun saveWiki(wiki: Wiki, wikisViewModel: WikisViewModel): Boolean {
+private fun saveWiki(wiki: Wiki, wikisViewModel: WikisViewModel): Boolean {
     // tries to update/insert the wiki into the database but will return false if it fails
     // note that the form validation should check if the name is already in use or this will return false (unique constraint)
     try {
@@ -64,7 +69,7 @@ fun saveWiki(wiki: Wiki, wikisViewModel: WikisViewModel): Boolean {
     }
 }
 
-fun deleteWiki(wikiId: Long, wikisViewModel: WikisViewModel): Boolean {
+private fun deleteWiki(wikiId: Long, wikisViewModel: WikisViewModel): Boolean {
     // tries to delete the wiki from the database but will return false if it fails
     // note: not allowed to delete id 1 (wikipedia), this will return false if attempted
     // the user can still edit the wiki though, but by default it is wikipedia
@@ -75,6 +80,70 @@ fun deleteWiki(wikiId: Long, wikisViewModel: WikisViewModel): Boolean {
         Log.e("DialogWikiEdit", "Error deleting wiki: ${e.message}")
         return false
     }
+}
+
+// returns the error message if the config is invalid, or null if it is valid
+private suspend fun checkConfig(
+    apiUrl: String,
+    authUsername: String,
+    authPassword: String
+): String? {
+    // basic sanity checks
+    if (apiUrl == "") {
+        Log.e("DialogWikiEdit", "Empty api url")
+        return "API URL is empty"
+    }
+
+    val apiUrlValid = apiUrl.startsWith("https://") || apiUrl.startsWith("http://")
+    if (!apiUrlValid) {
+        Log.e("DialogWikiEdit", "Invalid api url: $apiUrl")
+        return "Invalid URL protocol"
+    }
+
+    val apiEndsWith = apiUrl.endsWith("/api.php")
+    if (!apiEndsWith) {
+        Log.e("DialogWikiEdit", "Invalid api url: $apiUrl")
+        return "URL doesn't end with api.php"
+    }
+
+    // try logging in first, as some wikis strictly require authentication
+    if (authUsername != "" || authPassword != "") {
+        try {
+            logInToMediawiki(
+                apiUrl,
+                authUsername,
+                authPassword
+            )
+        } catch (e: Exception) {
+            Log.e("DialogWikiEdit", "Error logging in: ${e.message}")
+            return "Login failed"
+        }
+    }
+
+    // try fetching the site info to check if the api is valid
+    try {
+        val siteInfo = getSiteInfo(apiUrl)
+        Log.i("DialogWikiEdit", "Site info: $siteInfo")
+
+        // require TextExtracts and PageImages
+        val hasTextExtracts = siteInfo.extensions.contains("TextExtracts")
+        val hasPageImages = siteInfo.extensions.contains("PageImages")
+
+        if (!hasTextExtracts) {
+            Log.e("DialogWikiEdit", "API does not support TextExtracts")
+            return "Wiki needs TextExtracts extension"
+        }
+
+        if (!hasPageImages) {
+            Log.e("DialogWikiEdit", "API does not support PageImages")
+            return "Wiki needs PageImages extension"
+        }
+    } catch (e: Exception) {
+        Log.e("DialogWikiEdit", "Error fetching site info: ${e.message}")
+        return "Couldn't access API. Try authentication?"
+    }
+
+    return null
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -108,6 +177,8 @@ fun DialogWikiEdit(
     var wikiAuthUsername by remember { mutableStateOf(wiki.authUsername) }
     var wikiAuthPassword by remember { mutableStateOf(wiki.authPassword) }
 
+    var wikiConfigError by remember { mutableStateOf<String?>(null) }
+
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true,
     )
@@ -116,6 +187,26 @@ fun DialogWikiEdit(
 
     // focus traversal order for the form fields. semantics is only for talkback
     val (first, second, third, fourth, fifth, sixth) = remember { FocusRequester.createRefs() }
+
+    // run check when config changes
+    // TODO debounce this
+    LaunchedEffect(wikiApiUrl, wikiAuthUsername, wikiAuthPassword) {
+        wikiConfigError = checkConfig(
+            apiUrl = wikiApiUrl,
+            authUsername = wikiAuthUsername,
+            authPassword = wikiAuthPassword
+        )
+
+        // if no name is set, use the site name as the wiki name
+        if (wikiConfigError === null && wikiName === "") {
+            try {
+                val siteInfo = getSiteInfo(wikiApiUrl)
+                wikiName = siteInfo.siteName
+            } catch (e: Exception) {
+                Log.e("DialogWikiEdit", "Error fetching site info: ${e.message}")
+            }
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -183,9 +274,11 @@ fun DialogWikiEdit(
                                 }
                             },
                             colors = ButtonDefaults.textButtonColors(),
-                            modifier = Modifier.semantics {
-                                traversalIndex = 4f
-                            }.focusRequester(fifth)
+                            modifier = Modifier
+                                .semantics {
+                                    traversalIndex = 4f
+                                }
+                                .focusRequester(fifth)
                         ) {
                             Text("Save")
                         }
@@ -209,16 +302,33 @@ fun DialogWikiEdit(
                         .fillMaxWidth()
                         .padding(bottom = bottomPadding)
                 ) {
-                    Icon(
-                        Icons.Default.Check,
-                        contentDescription = null
-                    )
+                    // tick for valid config, cross for invalid
+                    if (wikiConfigError === null) {
+                        Icon(
+                            Icons.Default.Check,
+                            contentDescription = null
+                        )
+                    } else {
+                        Icon(
+                            Icons.Outlined.Close,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
 
                     Spacer(modifier = Modifier.padding(horizontal = 8.dp))
 
+                    // show looks good if the config is valid, otherwise show the error message
+                    val text = wikiConfigError ?: stringResource(R.string.config_ok)
+                    val color = if (wikiConfigError == null) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    }
                     Text(
-                        text = stringResource(R.string.config_ok),
+                        text,
                         style = MaterialTheme.typography.bodyLarge,
+                        color = color,
                     )
                 }
             }
@@ -305,12 +415,13 @@ fun DialogWikiEdit(
                             bottom = formFieldBottomPadding,
                             start = formFieldHorizontalPadding,
                             end = formFieldHorizontalPadding
-                        ).semantics {
+                        )
+                        .semantics {
                             traversalIndex = 0f
-                        }.focusRequester(first)
+                        }
+                        .focusRequester(first)
                 )
 
-                // TODO: this will get set automatically when trying the api if empty
                 OutlinedTextField(
                     value = wikiName,
                     onValueChange = { value ->
@@ -325,9 +436,11 @@ fun DialogWikiEdit(
                             bottom = formFieldBottomPadding,
                             start = formFieldHorizontalPadding,
                             end = formFieldHorizontalPadding
-                        ).semantics {
+                        )
+                        .semantics {
                             traversalIndex = 1f
-                        }.focusRequester(second)
+                        }
+                        .focusRequester(second)
                 )
 
                 Spacer(modifier = Modifier.padding(24.dp))
@@ -353,9 +466,11 @@ fun DialogWikiEdit(
                             bottom = formFieldBottomPadding,
                             start = formFieldHorizontalPadding,
                             end = formFieldHorizontalPadding
-                        ).semantics {
+                        )
+                        .semantics {
                             traversalIndex = 2f
-                        }.focusRequester(third)
+                        }
+                        .focusRequester(third)
                 )
 
                 OutlinedTextField(
@@ -373,9 +488,11 @@ fun DialogWikiEdit(
                             bottom = formFieldBottomPadding,
                             start = formFieldHorizontalPadding,
                             end = formFieldHorizontalPadding
-                        ).semantics {
+                        )
+                        .semantics {
                             traversalIndex = 3f
-                        }.focusRequester(fourth)
+                        }
+                        .focusRequester(fourth)
                 )
 
                 Spacer(modifier = Modifier.padding(24.dp))
@@ -386,9 +503,12 @@ fun DialogWikiEdit(
                     Row(
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth().semantics {
-                            traversalIndex = 5f
-                        }.focusRequester(sixth)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .semantics {
+                                traversalIndex = 5f
+                            }
+                            .focusRequester(sixth)
                     ) {
                         Button(
                             onClick = {

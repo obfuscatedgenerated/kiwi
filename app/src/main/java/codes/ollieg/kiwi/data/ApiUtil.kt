@@ -222,3 +222,28 @@ fun setQueryParameter(url: URL, key: String, value: String): URL {
 
     return replaceQueryParameters(url, params)
 }
+
+data class SiteInfo(
+    val siteName: String,
+    val extensions: List<String>
+)
+
+suspend fun getSiteInfo(apiUrl: String): SiteInfo {
+    val url = fromApiBase(apiUrl, "?action=query&meta=siteinfo&siprop=general|extensions&format=json")
+    val response = fetch(url, withDefaultHeaders())
+
+    // parse the json
+    val data = JSONObject(response)
+
+    // get site name and extension list
+    val siteName = data.getJSONObject("query").getJSONObject("general").getString("sitename")
+    val extensions = data.getJSONObject("query").getJSONArray("extensions")
+    val extensionList = mutableListOf<String>()
+    for (i in 0 until extensions.length()) {
+        val extension = extensions.getJSONObject(i)
+        val name = extension.getString("name")
+        extensionList.add(name)
+    }
+
+    return SiteInfo(siteName, extensionList)
+}
