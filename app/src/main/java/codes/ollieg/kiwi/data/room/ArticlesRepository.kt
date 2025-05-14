@@ -87,7 +87,6 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
 
         if (latestRevId == null) {
             Log.e("ArticlesRepository", "latestRevId is null, returning cached article")
-            // TODO: or should it always fetch? this likely represents an error state though
             return cached
         }
 
@@ -101,9 +100,6 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         // otherwise, fetch the article from the api
         // this uses the textextracts extension, so the add wiki check needs to check special:version to see if it's installed
         // this request also gets the url with the info prop
-        // TODO: the pageimages extension is also required for thumbnails, can it be made optional or does it need to be checked for
-        // TODO: if textextracts isn't installed, could try to parse it here, but previously that didn't go very well
-        // TODO: fetch article images
         var requestUrl = fromApiBase(
             wiki.apiUrl,
             "?action=query&prop=extracts|info|pageimages&explaintext=1&inprop=url&pilicense=any&formatversion=2&format=json"
@@ -182,8 +178,6 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
         Log.i("ArticlesRepository", "upserted article: $article")
 
         return article
-
-        // TODO: give the user a way to pull to refresh the article on the article screen, which will do skipCache = true
     }
 
     fun getAllCachedByWikiLive(wiki: Wiki): LiveData<List<Article>> {
@@ -347,6 +341,4 @@ class ArticlesRepository(private val articlesDao: ArticlesDao) {
 
         return result
     }
-
-    // TODO: once api implemented here, remove use of the api from other classes
 }

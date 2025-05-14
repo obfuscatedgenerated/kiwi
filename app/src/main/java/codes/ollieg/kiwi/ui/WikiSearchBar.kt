@@ -198,5 +198,3 @@ fun WikiSearchBar(
         // TODO: load next page of results if they scroll past the 15th result
     }
 }
-
-// TODO: remember ui state for back navigation
