@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "codes.ollieg.kiwi"
-        minSdk = 24 // TODO: change this
+        minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
