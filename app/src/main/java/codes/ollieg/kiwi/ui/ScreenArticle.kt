@@ -141,20 +141,17 @@ fun ScreenArticle(
 
                             Log.i("ScreenArticle", "Double tapped to star article: ${articleValue.title}")
 
-                            val newArticle = articleValue.copy(
-                                // toggle the starred state of the article
-                                starred = !articleValue.starred
-                            )
+                           articleValue.starred = !articleValue.starred
 
                             // update the article in the database
-                            articlesViewModel.updateInCache(newArticle)
+                            articlesViewModel.updateInCache(articleValue)
 
                             // show toast depending on the new state
                             val context = wikisViewModel.getApplication() as Context
-                            val toastText = if (newArticle.starred) {
-                                context.getString(R.string.starred_article, newArticle.title)
+                            val toastText = if (articleValue.starred) {
+                                context.getString(R.string.starred_article, articleValue.title)
                             } else {
-                                context.getString(R.string.unstarred_article, newArticle.title)
+                                context.getString(R.string.unstarred_article, articleValue.title)
                             }
 
                             Toast.makeText(
